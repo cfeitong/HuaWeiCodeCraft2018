@@ -1,7 +1,9 @@
 #include "predict.h"
 #include "data_preprocess.h"
+#include "linear_regression.h"
 #include <sstream>
 #include <stdio.h>
+#include <memory>
 #include <string>
 
 using namespace std;
@@ -11,7 +13,11 @@ string join(char **data, int count);
 //你要完成的功能总入口
 void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
                     int data_num, char *filename) {
-    IdxByFlavor flavor = parse(join(data, MAX_DATA_NUM));
+
+    RecordSet records = RecordSet(parse(join(data, data_num)));
+    unique_ptr<LinearRegression> lr(new LinearRegression());
+    lr->init(10, records.to_samples());
+    lr->train(10, 1e-3, 1e-2);
 
     // 需要输出的内容
     char *result_file = (char *)"17\n\n0 8 0 20";
@@ -29,3 +35,4 @@ string join(char **data, int count) {
     string s = ss.str();
     return s;
 }
+

@@ -1,15 +1,12 @@
 #ifndef __LINEAR_REGRESSION_H__
 #define __LINEAR_REGRESSION_H__
 
+#include "data_preprocess.h"
 #include <vector>
+
 using namespace std;
 
 typedef pair<double, vector<double>> pdvd;
-
-struct Sample {
-    vector<int> X;
-    int y;
-};
 
 class LinearRegression {
 public:
