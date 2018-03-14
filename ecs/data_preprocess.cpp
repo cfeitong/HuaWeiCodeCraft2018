@@ -4,6 +4,7 @@
 #include <map>
 #include <sstream>
 #include <vector>
+#include <cmath>
 
 using namespace std;
 
@@ -35,6 +36,45 @@ int RecordSet::mem_required(string date) {
             sscanf(rec.flavor.c_str(), "flavor%d", &flavor);
             ret += MEM[flavor];
         }
+    }
+    return ret;
+}
+
+Normalizer::Normalizer(const vector<Sample> &samples) {
+    this->mean.y = 0;
+    this->std.y = 0;
+    for (int i = 0; i < samples[0].X.size(); i++) {
+        this->mean.X.push_back(0);
+        this->std.X.push_back(0);
+    }
+    for (auto &sample : samples) {
+        this->mean.y += sample.y / samples.size();
+        this->std.y += sample.y * sample.y / samples.size();
+        for (int i = 0; i < sample.X.size(); i++) {
+            this->mean.X[i] += sample.X[i] / samples.size();
+            this->std.X[i] += sample.X[i] * sample.X[i] / samples.size();
+        }
+    }
+    this->std.y = sqrt(this->std.y - this->mean.y * this->mean.y);
+    for (int i = 0; i < samples[0].X.size(); i++) {
+        this->std.X[i] = sqrt(this->std.X[i] - this->mean.X[i] * this->mean.X[i]);
+    }
+}
+
+Sample Normalizer::transform(Sample sample) {
+    sample.y -= this->mean.y;
+    sample.y /= this->std.y;
+    for (int i = 0; i < sample.X.size(); i++) {
+        sample.X[i] -= this->mean.X[i];
+        sample.X[i] /= this->std.X[i];
+    }
+    return sample;
+}
+
+vector<Sample> Normalizer::transform(vector<Sample> samples) {
+    vector<Sample> ret;
+    for (auto &sample : samples) {
+        ret.push_back(this->transform(sample));
     }
     return ret;
 }

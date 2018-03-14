@@ -1,4 +1,4 @@
-#if 0
+#if 1
 
 #include "linear_regression.h"
 #include <iostream>
@@ -46,7 +46,7 @@ vector<Sample> process(string filename) {
     vector<Sample> ans;
     Sample t;
     for(int i = 0; i < tt.size() - n - 1; i++) {
-        vector<int> X;
+        vector<double> X;
         for(int j = i; j < i + n; j++) X.push_back(tt[j]);
         t.X = X;
         t.y = tt[i + n];

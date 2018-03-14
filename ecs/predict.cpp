@@ -16,8 +16,11 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
 
     RecordSet records = RecordSet(parse(join(data, data_num)));
     unique_ptr<LinearRegression> lr(new LinearRegression());
-    lr->init(10, records.to_samples());
-    lr->train(10, 1e-3, 1e-2);
+    vector<Sample> samples = records.to_samples();
+    Normalizer norm(samples);
+    samples = norm.transform(samples);
+    lr->init(5, norm.transform(samples));
+    lr->train(100, 1e-3, 1e-4);
 
     // 需要输出的内容
     char *result_file = (char *)"17\n\n0 8 0 20";
