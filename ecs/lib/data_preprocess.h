@@ -21,6 +21,8 @@ struct Record {
 
 typedef map<string, vector<Record>> IdxByFlavor;
 typedef map<string, vector<Record>> IdxByDate;
+typedef map<string, vector<double>> DataByFlavor;
+typedef map<string, vector<Sample>> SampleByFlavor;
 
 class RecordSet {
   public:
@@ -31,14 +33,15 @@ class RecordSet {
 
     int cpu_required(string date);
     int mem_required(string date);
-    vector<Sample> to_samples();
+    SampleByFlavor to_samples(int n);
 
   private:
     IdxByDate by_date;
     IdxByFlavor by_flavor;
+    DataByFlavor data_flavor;
     vector<Record> records;
 };
-
+/*
 class Normalizer {
   public:
     Normalizer(const vector<Sample> &samples);
@@ -52,7 +55,7 @@ class Normalizer {
   private:
     Sample mean;
     Sample std;
-};
+}; */
 
 Record parse_line(string line);
 vector<Record> parse(string content);

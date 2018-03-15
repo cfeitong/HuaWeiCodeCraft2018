@@ -1,6 +1,7 @@
 #include "predict.h"
 #include "data_preprocess.h"
 #include "linear_regression.h"
+#include <iostream>
 #include <sstream>
 #include <stdio.h>
 #include <memory>
@@ -14,14 +15,18 @@ string join(char **data, int count);
 void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
                     int data_num, char *filename) {
 
+    int n = 10;
     RecordSet records = RecordSet(parse(join(data, data_num)));
     unique_ptr<LinearRegression> lr(new LinearRegression());
-    vector<Sample> samples = records.to_samples();
-    Normalizer norm(samples);
-    samples = norm.transform(samples);
-    lr->init(5, norm.transform(samples));
-    lr->train(100, 1e-3, 1e-4);
-
+    SampleByFlavor samples = records.to_samples(n);
+    lr->init(n, samples["flavor5"]);
+    lr->train(100, 1e-3, 1e-2);
+    // test
+    vector<double> tmp;
+    for (int i = 0; i < n; i++) tmp.push_back(i);
+    vector<double> ans = lr->predict(tmp, 5);
+    for (auto i : ans) cout << i << endl;
+    
     // 需要输出的内容
     char *result_file = (char *)"17\n\n0 8 0 20";
 

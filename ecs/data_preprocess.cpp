@@ -5,6 +5,8 @@
 #include <sstream>
 #include <vector>
 #include <cmath>
+#include <iostream>
+#include <algorithm>
 
 using namespace std;
 
@@ -13,6 +15,29 @@ RecordSet::RecordSet(const vector<Record> &records) {
     for (auto &rec : records) {
         this->by_date[rec.date].push_back(rec);
         this->by_flavor[rec.flavor].push_back(rec);
+    }
+    // Convert Record to double vector
+    for (auto &fr : this->by_flavor) {
+        string idx = fr.first;
+        vector<Record> &rec = fr.second;
+        int bg = 365000, ed = 0;
+        int y, m, d;
+        for (auto &r : rec) {
+            sscanf(r.date.c_str(), "%d-%d-%d", &y, &m, &d);
+            int dt = (y - 2000) * 365 + m * 33 + d;
+            bg = min(bg, dt);
+            ed = max(ed, dt);
+        }
+        int ss = ed - bg + 1;
+        if (ss < 50) ss = 50;
+        vector<double> res(ss);
+        for(int i = 0; i < ed - bg + 1; i++) res[i] = 0;
+        for(auto &r : rec) {
+            sscanf(r.date.c_str(), "%d-%d-%d", &y, &m, &d);
+            int dt = (y - 2000) * 365 + m * 33 + d - bg;
+            res[dt] += 1;
+        }
+        this->data_flavor[idx] = res;
     }
 }
 
@@ -39,7 +64,7 @@ int RecordSet::mem_required(string date) {
     }
     return ret;
 }
-
+/*
 Normalizer::Normalizer(const vector<Sample> &samples) {
     this->mean.y = 0;
     this->std.y = 0;
@@ -90,6 +115,22 @@ vector<Sample> RecordSet::to_samples() {
         samples.push_back(sample);
     }
     return samples;
+} */
+SampleByFlavor RecordSet::to_samples(int n) {
+    SampleByFlavor ret;
+    for (auto &fr : this->data_flavor) {
+        string idx = fr.first;
+        vector<double> &data = fr.second;
+        vector<Sample> tmp;
+        Sample t;
+        for (int i = 0; i < data.size() - n - 1; i++) {
+            for(int j = i; j < i + n; j++) t.X.push_back(data[j]);
+            t.y = data[i + n];
+            tmp.push_back(t);
+        }
+        ret[idx] = tmp;
+    }
+    return ret;
 }
 
 Record parse_line(string line) {
