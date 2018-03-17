@@ -1,10 +1,10 @@
-12
-flavor1 5
-flavor2 3
-flavor3 1
+4
+flavor1 1
+flavor2 1
+flavor3 0
 flavor4 1
-flavor5 2
+flavor5 1
 
 1
-1 flavor1 5 flavor2 3 flavor3 1 flavor4 1 flavor5 2
+1 flavor1 1 flavor2 1 flavor3 0 flavor4 1 flavor5 1
 

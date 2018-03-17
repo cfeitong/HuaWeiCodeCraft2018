@@ -65,16 +65,23 @@ int RecordSet::mem_required(string date) {
     return ret;
 }
 
-SampleByFlavor RecordSet::to_samples(int n) {
+SampleByFlavor RecordSet::to_samples(int n, int days) {
     SampleByFlavor ret;
     for (auto &fr : this->data_flavor) {
         string idx = fr.first;
         vector<double> &data = fr.second;
         vector<Sample> tmp;
-        for (int i = 0; i < data.size() - n - 1; i++) {
+        for (int i = 0; i < data.size() - (n + 1) * days - 1; i++) {
             Sample t;
-            for(int j = i; j < i + n; j++) t.X.push_back(data[j]);
-            t.y = data[i + n];
+            for (int j = 0; j < n; j++) {
+                double s = 0;
+                for(int k = i + j * days; k < i + j * days + days; k++) {
+                    s += data[k];
+                }
+                t.X.push_back(s);
+            }
+            t.y = 0;
+            for (int j = i + n * days; j < i + (n + 1) * days; j++) t.y += data[j];
             tmp.push_back(t);
         }
         ret[idx] = tmp;

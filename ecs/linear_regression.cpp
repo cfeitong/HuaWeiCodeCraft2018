@@ -73,24 +73,20 @@ bool LinearRegression::train(int num_times, double lr, double reg) {
     return true;
 }
 
-vector<double> LinearRegression::predict(vector<double> testset, int len) {
-    vector<double> pred, test;
+double LinearRegression::predict(vector<double> testset) {
+    vector<double> test;
     for (int i = testset.size() - this->n; i <= testset.size() - 1; i++)
         test.push_back(testset[i]);
-    for (int i = 0; i < len; i++) {
-        Sample tmp;
-        tmp.X = test; tmp.y = 0;
-        pdd p = this->norm(tmp);
-        test = tmp.X;
-        double score = 0;
-        for (int i = test.size() - this->n; i <= test.size() - 1; i++) {
-            score += test[i] * this->w[i];
-        }
-        score = score * p.second + p.first;
-        pred.push_back(score);
-        test.push_back(score);
+    Sample tmp;
+    tmp.X = test; tmp.y = 0;
+    pdd p = this->norm(tmp);
+    test = tmp.X;
+    double score = 0;
+    for (int i = test.size() - this->n; i <= test.size() - 1; i++) {
+        score += test[i] * this->w[i];
     }
-    return pred;
+    score = score * p.second + p.first;
+    return score;
 }
 
 void LinearRegression::show() {

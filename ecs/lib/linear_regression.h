@@ -15,7 +15,7 @@ public:
     pdvd loss(double reg);
     pdd norm(Sample &sample);
     bool train(int num_times, double lr, double reg);
-    vector<double> predict(vector<double> testset, int len);
+    double predict(vector<double> testset);
     void show();
 private:
     int n; // dating back n times

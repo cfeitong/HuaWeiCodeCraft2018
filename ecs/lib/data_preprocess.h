@@ -33,7 +33,7 @@ class RecordSet {
 
     int cpu_required(string date);
     int mem_required(string date);
-    SampleByFlavor to_samples(int n);
+    SampleByFlavor to_samples(int n, int days);
     vector<double> to_data(int n, string flavor);
 
   private:

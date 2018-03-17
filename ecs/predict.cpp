@@ -19,11 +19,11 @@ string join(char **data, int count);
 void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
                     int data_num, char *filename) {
 
-    int n = 10;
+    int n = 3;
     Info meta(info);
 
     RecordSet records = RecordSet(parse(join(data, data_num)));
-    SampleByFlavor samples = records.to_samples(n);
+    SampleByFlavor samples = records.to_samples(n, meta.days);
     Allocator alloc(meta.cpu_lim, meta.mem_lim);
     for (auto flavor : meta.targets) {
         unique_ptr<LinearRegression> lr(new LinearRegression());
@@ -31,12 +31,10 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         lr->init(n, s);
         lr->train(1000, 1e-3, 1e-1);
         auto pred = records.to_data(10, flavor);
-        vector<double> ans = lr->predict(pred, meta.days);
-        for (double d : ans) {
-            int dd = ceil(d);
-            for (int i = 0; i < dd; i++) {
-                alloc.alloc(flavor);
-            }
+        double ans = lr->predict(pred);
+        int dd = ceil(ans);
+        for (int i = 0; i < dd; i++) {
+            alloc.alloc(flavor);
         }
     }
 
