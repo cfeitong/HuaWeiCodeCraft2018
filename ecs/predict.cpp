@@ -27,31 +27,26 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
     int needed;
     line++;
     sscanf(info[line++], "%d", &needed);
-    cout << needed << endl;
     vector<string> targets;
     for (int i = 0; i < needed; i++) {
         sscanf(info[line++], "%s", s);
         targets.emplace_back(s);
     }
-    cout << "hh" << endl;
+    line++;
     sscanf(info[line++], "%s", s); string type(s);
+    line++;
     int sy, sm, sd; sscanf(info[line++], "%d-%d-%d", &sy, &sm, &sd);
     int ey, em, ed; sscanf(info[line++], "%d-%d-%d", &ey, &em, &ed);
     int len = (ey - sy) * 365 + (em - sm) * 28 + ed - sd;
-
-    printf("cpu=%d, mem=%d, disk=%d, needed=%d, type=%s, sy, sm, sd=%d,%d,%d, ey, em, ed=%d,%d,%d\n",
-        cpu, mem, disk, needed, type.c_str(), sy, sm, sd, ey, em, ed);
-
 
     mem *= 1024;
     int n = 10;
     RecordSet records = RecordSet(parse(join(data, data_num)));
     SampleByFlavor samples = records.to_samples(n);
     Allocator alloc(cpu, mem);
-    for (auto &it : samples) {
+    for (auto flavor : targets) {
         unique_ptr<LinearRegression> lr(new LinearRegression());
-        string flavor = it.first;
-        auto &s = it.second;
+        auto &s = samples[flavor];
         lr->init(n, s);
         lr->train(1000, 1e-3, 1e-1);
         auto pred = records.to_data(10, flavor);
