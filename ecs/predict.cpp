@@ -24,14 +24,16 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
     int line = 0;
     int cpu, mem, disk;
     sscanf(info[line++], "%d%d%d", &cpu, &mem, &disk);
-    printf("%d %d %d\n", cpu, mem, disk);
     int needed;
+    line++;
     sscanf(info[line++], "%d", &needed);
+    cout << needed << endl;
     vector<string> targets;
     for (int i = 0; i < needed; i++) {
         sscanf(info[line++], "%s", s);
         targets.emplace_back(s);
     }
+    cout << "hh" << endl;
     sscanf(info[line++], "%s", s); string type(s);
     int sy, sm, sd; sscanf(info[line++], "%d-%d-%d", &sy, &sm, &sd);
     int ey, em, ed; sscanf(info[line++], "%d-%d-%d", &ey, &em, &ed);
