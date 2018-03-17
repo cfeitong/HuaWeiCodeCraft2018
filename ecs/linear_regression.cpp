@@ -46,7 +46,7 @@ pdvd LinearRegression::loss(double reg) {
 
 pdd LinearRegression::norm(Sample &sample) {
     double mn = 0;
-    double var = 0;
+    double var = 1e-6;
     int N = sample.X.size();
     for (auto &i : sample.X) mn += i;
     mn = mn / N;

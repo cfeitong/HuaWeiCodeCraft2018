@@ -30,13 +30,13 @@ RecordSet::RecordSet(const vector<Record> &records) {
         }
         int ss = ed - bg + 1;
         if (ss < 50) ss = 50;
-        vector<double> res(ss);
-        for(int i = 0; i < ed - bg + 1; i++) res[i] = 0;
+        vector<double> res(ss, 0);
         for(auto &r : rec) {
             sscanf(r.date.c_str(), "%d-%d-%d", &y, &m, &d);
-            int dt = (y - 2000) * 365 + m * 33 + d - bg;
+            int dt = ss - (ed - ((y - 2000) * 365 + m * 33 + d)) - 1; // put in proper place
             res[dt] += 1;
         }
+
         this->data_flavor[idx] = res;
     }
 }
@@ -64,71 +64,29 @@ int RecordSet::mem_required(string date) {
     }
     return ret;
 }
-/*
-Normalizer::Normalizer(const vector<Sample> &samples) {
-    this->mean.y = 0;
-    this->std.y = 0;
-    for (int i = 0; i < samples[0].X.size(); i++) {
-        this->mean.X.push_back(0);
-        this->std.X.push_back(0);
-    }
-    for (auto &sample : samples) {
-        this->mean.y += sample.y / samples.size();
-        this->std.y += sample.y * sample.y / samples.size();
-        for (int i = 0; i < sample.X.size(); i++) {
-            this->mean.X[i] += sample.X[i] / samples.size();
-            this->std.X[i] += sample.X[i] * sample.X[i] / samples.size();
-        }
-    }
-    this->std.y = sqrt(this->std.y - this->mean.y * this->mean.y);
-    for (int i = 0; i < samples[0].X.size(); i++) {
-        this->std.X[i] = sqrt(this->std.X[i] - this->mean.X[i] * this->mean.X[i]);
-    }
-}
 
-Sample Normalizer::transform(Sample sample) {
-    sample.y -= this->mean.y;
-    sample.y /= this->std.y;
-    for (int i = 0; i < sample.X.size(); i++) {
-        sample.X[i] -= this->mean.X[i];
-        sample.X[i] /= this->std.X[i];
-    }
-    return sample;
-}
-
-vector<Sample> Normalizer::transform(vector<Sample> samples) {
-    vector<Sample> ret;
-    for (auto &sample : samples) {
-        ret.push_back(this->transform(sample));
-    }
-    return ret;
-}
-
-vector<Sample> RecordSet::to_samples() {
-    vector<Sample> samples;
-    for (auto &it : this->by_date) {
-        Sample sample;
-        sample.y = this->cpu_required(it.first);
-        int y, m, d;
-        sscanf(it.first.c_str(), "%d-%d-%d", &y, &m, &d);
-        sample.X.push_back((y - 2000.0) * 356 + m * 33 + d);
-        samples.push_back(sample);
-    }
-    return samples;
-} */
 SampleByFlavor RecordSet::to_samples(int n) {
     SampleByFlavor ret;
     for (auto &fr : this->data_flavor) {
         string idx = fr.first;
         vector<double> &data = fr.second;
         vector<Sample> tmp;
-        Sample t;
         for (int i = 0; i < data.size() - n - 1; i++) {
+            Sample t;
             for(int j = i; j < i + n; j++) t.X.push_back(data[j]);
             t.y = data[i + n];
             tmp.push_back(t);
         }
         ret[idx] = tmp;
+    }
+    return ret;
+}
+
+vector<double> RecordSet::to_data(int n, string flavor) {
+    auto &vec = this->data_flavor[flavor];
+    vector<double> ret;
+    for (int i = vec.size() - n; i < vec.size(); i++) {
+        ret.push_back(vec[i]);
     }
     return ret;
 }

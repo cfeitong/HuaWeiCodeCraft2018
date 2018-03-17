@@ -34,6 +34,7 @@ class RecordSet {
     int cpu_required(string date);
     int mem_required(string date);
     SampleByFlavor to_samples(int n);
+    vector<double> to_data(int n, string flavor);
 
   private:
     IdxByDate by_date;
