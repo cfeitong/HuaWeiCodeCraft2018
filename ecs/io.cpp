@@ -1,3 +1,4 @@
+#include "lib_io.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,6 +8,10 @@
 #include <errno.h>
 #include <unistd.h>
 #include <signal.h>
+#include <string>
+#include <sstream>
+
+using namespace std;
 
 #define MAX_LINE_LEN 55000
 
@@ -17,9 +22,69 @@
 #define PRINT(...)
 #endif
 
+static char s[100];
+static char final_result[10000];
 
 INLINE void write_file(const bool cover, const char * const buff, const char * const filename);
 
+Info::Info(char **info) {
+    int line = 0;
+    int cpu, mem, disk;
+    sscanf(info[line++], "%d%d%d", &cpu, &mem, &disk);
+    int needed;
+    line++;
+    sscanf(info[line++], "%d", &needed);
+    vector<string> tar;
+    for (int i = 0; i < needed; i++) {
+        sscanf(info[line++], "%s", s);
+        tar.emplace_back(s);
+    }
+    line++;
+    sscanf(info[line++], "%s", s); string type(s);
+    line++;
+    int sy, sm, sd; sscanf(info[line++], "%d-%d-%d", &sy, &sm, &sd);
+    int ey, em, ed; sscanf(info[line++], "%d-%d-%d", &ey, &em, &ed);
+    int len = (ey - sy) * 365 + (em - sm) * 28 + ed - sd;
+    mem *= 1024;
+
+    this->days = len;
+    this->cpu_lim = cpu;
+    this->mem_lim = mem;
+    this->targets = tar;
+    this->opt_type = type;
+}
+
+Outputor::Outputor(Allocator &alloc, const Info &meta) {
+    stringstream ss;
+    int total = 0;
+    for (string flavor : meta.targets) {
+        int cnt = alloc.count_vir(flavor);
+        total += cnt;
+    }
+    ss << total << "\n";
+    for (string flavor : meta.targets) {
+        int cnt = alloc.count_vir(flavor);
+        ss << flavor << " " << cnt << "\n";
+    }
+    ss << "\n";
+
+    int phy_count = alloc.count_phy();
+    ss << phy_count << "\n";
+    for (int i = 1; i <= phy_count; i++) {
+        ss << i;
+        for (string flavor : meta.targets) {
+            int cnt = alloc.count(i, flavor);
+            ss << " " << flavor << " " << cnt;
+        }
+        ss << "\n";
+    }
+    this->result = ss.str();
+}
+
+char * Outputor::get_output() {
+    strcpy(final_result, this->result.c_str());
+    return final_result;
+}
 
 void print_time(const char *head)
 {
