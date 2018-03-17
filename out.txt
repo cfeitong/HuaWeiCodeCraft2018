@@ -1,0 +1,10 @@
+21
+flavor1 4
+flavor2 3
+flavor3 5
+flavor4 1
+flavor5 8
+
+1
+1 flavor1 4 flavor2 3 flavor3 5 flavor4 1 flavor5 8
+

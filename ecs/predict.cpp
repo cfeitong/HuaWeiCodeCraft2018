@@ -75,13 +75,13 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
     int phy_count = alloc.count_phy();
     ss << phy_count << "\n";
     for (int i = 1; i <= phy_count; i++) {
-        ss << i << " ";
+        ss << i;
         for (string flavor : targets) {
             int cnt = alloc.count(i, flavor);
-            ss << flavor << " " << cnt << " ";
+            ss << " " << flavor << " " << cnt;
         }
+        ss << "\n";
     }
-    ss << "\n";
     string result = ss.str();
 
     strcpy(final_result, result.c_str());
