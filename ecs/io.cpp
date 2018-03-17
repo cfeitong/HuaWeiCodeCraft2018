@@ -94,11 +94,11 @@ char *Outputor::get_output() {
 int to_days(int year, int month, int day) {
     struct tm a = {0, 0, 0, 0, 1, 2000};
     struct tm b = {0, 0, 0, day, month, year - 1900};
-    time_t x = std::mktime(&a);
-    time_t y = std::mktime(&b);
+    time_t x = mktime(&a);
+    time_t y = mktime(&b);
     int difference = 0;
-    if (x != (std::time_t)(-1) && y != (std::time_t)(-1)) {
-        difference = int(std::difftime(y, x) / (60 * 60 * 24) + 0.5);
+    if (x != (time_t)(-1) && y != (time_t)(-1)) {
+        difference = int(difftime(y, x) / (60 * 60 * 24) + 0.5);
     } else {
         exit(-1);
     }
