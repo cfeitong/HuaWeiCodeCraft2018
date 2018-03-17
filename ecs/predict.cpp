@@ -30,7 +30,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         auto &s = samples[flavor];
         lr->init(n, s);
         lr->train(1000, 1e-3, 1e-1);
-        auto pred = records.to_data(10, flavor);
+        auto pred = records.to_data(10, meta.days, flavor);
         double ans = lr->predict(pred);
         int dd = ceil(ans);
         for (int i = 0; i < dd; i++) {

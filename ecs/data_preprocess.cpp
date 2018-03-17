@@ -1,4 +1,5 @@
 #include "data_preprocess.h"
+#include "lib_time.h"
 #include "constant.h"
 #include <cstdio>
 #include <map>
@@ -13,7 +14,6 @@ using namespace std;
 RecordSet::RecordSet(const vector<Record> &records) {
     this->records = records;
     for (auto &rec : records) {
-        this->by_date[rec.date].push_back(rec);
         this->by_flavor[rec.flavor].push_back(rec);
     }
     // Convert Record to double vector
@@ -21,10 +21,8 @@ RecordSet::RecordSet(const vector<Record> &records) {
         string idx = fr.first;
         vector<Record> &rec = fr.second;
         int bg = 365000, ed = 0;
-        int y, m, d;
         for (auto &r : rec) {
-            sscanf(r.date.c_str(), "%d-%d-%d", &y, &m, &d);
-            int dt = (y - 2000) * 365 + m * 33 + d;
+            int dt = r.time;
             bg = min(bg, dt);
             ed = max(ed, dt);
         }
@@ -32,37 +30,12 @@ RecordSet::RecordSet(const vector<Record> &records) {
         if (ss < 50) ss = 50;
         vector<double> res(ss, 0);
         for(auto &r : rec) {
-            sscanf(r.date.c_str(), "%d-%d-%d", &y, &m, &d);
-            int dt = ss - (ed - ((y - 2000) * 365 + m * 33 + d)) - 1; // put in proper place
+            int dt = ss - (ed - r.time) - 1; // put in proper place
             res[dt] += 1;
         }
 
         this->data_flavor[idx] = res;
     }
-}
-
-int RecordSet::cpu_required(string date) {
-    int ret = 0;
-    for (auto &rec : this->records) {
-        if (rec.date == date) {
-            int flavor;
-            sscanf(rec.flavor.c_str(), "flavor%d", &flavor);
-            ret += CPU[flavor];
-        }
-    }
-    return ret;
-}
-
-int RecordSet::mem_required(string date) {
-    int ret = 0;
-    for (auto &rec : this->records) {
-        if (rec.date == date) {
-            int flavor;
-            sscanf(rec.flavor.c_str(), "flavor%d", &flavor);
-            ret += MEM[flavor];
-        }
-    }
-    return ret;
 }
 
 SampleByFlavor RecordSet::to_samples(int n, int days) {
@@ -89,11 +62,13 @@ SampleByFlavor RecordSet::to_samples(int n, int days) {
     return ret;
 }
 
-vector<double> RecordSet::to_data(int n, string flavor) {
+vector<double> RecordSet::to_data(int n, int days, string flavor) {
     auto &vec = this->data_flavor[flavor];
     vector<double> ret;
-    for (int i = vec.size() - n; i < vec.size(); i++) {
-        ret.push_back(vec[i]);
+    for (int i = 0; i < n; i++) {
+        double s = 0;
+        for (int j = vec.size() - (n - i) * days; j < vec.size() - (n - i - 1) * days; j++) s += vec[j];
+        ret.push_back(s);
     }
     return ret;
 }
@@ -104,8 +79,9 @@ Record parse_line(string line) {
     Record ret;
     ss >> ret.id;
     ss >> ret.flavor;
-    ss >> ret.date;
-    ss >> ret.time;
+    string date; int y, m, d;
+    ss >> date; sscanf(date.c_str(), "%d-%d-%d", &y, &m, &d);
+    ret.time = to_days(y, m, d);
     return ret;
 }
 

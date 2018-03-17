@@ -1,23 +1,25 @@
 #include "lib_io.h"
+#include "lib_time.h"
+#include <assert.h>
+#include <errno.h>
+#include <signal.h>
+#include <sstream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
-#include <time.h>
-#include <sys/timeb.h>
-#include <errno.h>
-#include <unistd.h>
-#include <signal.h>
 #include <string>
-#include <sstream>
+#include <sys/timeb.h>
+#include <time.h>
+#include <unistd.h>
+#include <stdexcept>
 
 using namespace std;
 
 #define MAX_LINE_LEN 55000
 
-#define INLINE  static __inline
+#define INLINE static __inline
 #ifdef _DEBUG
-#define PRINT   printf
+#define PRINT printf
 #else
 #define PRINT(...)
 #endif
@@ -25,7 +27,8 @@ using namespace std;
 static char s[100];
 static char final_result[10000];
 
-INLINE void write_file(const bool cover, const char * const buff, const char * const filename);
+INLINE void write_file(const bool cover, const char *const buff,
+                       const char *const filename);
 
 Info::Info(char **info) {
     int line = 0;
@@ -40,11 +43,14 @@ Info::Info(char **info) {
         tar.emplace_back(s);
     }
     line++;
-    sscanf(info[line++], "%s", s); string type(s);
+    sscanf(info[line++], "%s", s);
+    string type(s);
     line++;
-    int sy, sm, sd; sscanf(info[line++], "%d-%d-%d", &sy, &sm, &sd);
-    int ey, em, ed; sscanf(info[line++], "%d-%d-%d", &ey, &em, &ed);
-    int len = (ey - sy) * 365 + (em - sm) * 28 + ed - sd;
+    int sy, sm, sd;
+    sscanf(info[line++], "%d-%d-%d", &sy, &sm, &sd);
+    int ey, em, ed;
+    sscanf(info[line++], "%d-%d-%d", &ey, &em, &ed);
+    int len = to_days(ey, em, ed) -  to_days(sy, sm, sd);
     mem *= 1024;
 
     this->days = len;
@@ -81,16 +87,29 @@ Outputor::Outputor(Allocator &alloc, const Info &meta) {
     this->result = ss.str();
 }
 
-char * Outputor::get_output() {
+char *Outputor::get_output() {
     strcpy(final_result, this->result.c_str());
     return final_result;
 }
 
-void print_time(const char *head)
-{
+int to_days(int year, int month, int day) {
+    struct tm a = {0, 0, 0, 0, 1, 2000};
+    struct tm b = {0, 0, 0, day, month, year - 1900};
+    time_t x = std::mktime(&a);
+    time_t y = std::mktime(&b);
+    int difference = 0;
+    if (x != (std::time_t)(-1) && y != (std::time_t)(-1)) {
+        difference = int(std::difftime(y, x) / (60 * 60 * 24) + 0.5);
+    } else {
+        throw std::runtime_error("fail to calculate difference between dates");
+    }
+    return difference;
+}
+
+void print_time(const char *head) {
 #ifdef _DEBUG
     struct timeb rawtime;
-    struct tm * timeinfo;
+    struct tm *timeinfo;
     ftime(&rawtime);
     timeinfo = localtime(&rawtime.time);
 
@@ -101,32 +120,32 @@ void print_time(const char *head)
     ms = rawtime.millitm;
     s = rawtime.time;
 
-    if (out_ms < 0)
-    {
+    if (out_ms < 0) {
         out_ms += 1000;
         out_s -= 1;
     }
-    printf("%s date/time is: %s \tused time is %lu s %d ms.\n", head, asctime(timeinfo), out_s, out_ms);
+    printf("%s date/time is: %s \tused time is %lu s %d ms.\n", head,
+           asctime(timeinfo), out_s, out_ms);
 #endif
 }
 
-int read_file(char ** const buff, const unsigned int spec, const char * const filename)
-{
+int read_file(char **const buff, const unsigned int spec,
+              const char *const filename) {
     FILE *fp = fopen(filename, "r");
-    if (fp == NULL)
-    {
-    	PRINT("Fail to open file %s, %s.\n", filename, strerror(errno));
+    if (fp == NULL) {
+        PRINT("Fail to open file %s, %s.\n", filename, strerror(errno));
         return 0;
     }
     PRINT("Open file %s OK.\n", filename);
 
     char line[MAX_LINE_LEN + 2];
     unsigned int cnt = 0;
-    while ((cnt < spec) && !feof(fp))
-    {
+    while ((cnt < spec) && !feof(fp)) {
         line[0] = 0;
-        if (fgets(line, MAX_LINE_LEN + 2, fp) == NULL)  continue;
-        if (line[0] == 0)   continue;
+        if (fgets(line, MAX_LINE_LEN + 2, fp) == NULL)
+            continue;
+        if (line[0] == 0)
+            continue;
         buff[cnt] = (char *)malloc(MAX_LINE_LEN + 2);
         strncpy(buff[cnt], line, MAX_LINE_LEN + 2 - 1);
         buff[cnt][MAX_LINE_LEN + 1] = 0;
@@ -138,28 +157,24 @@ int read_file(char ** const buff, const unsigned int spec, const char * const fi
     return cnt;
 }
 
-void write_result(const char * const buff,const char * const filename)
-{
-	// 以覆盖的方式写入
+void write_result(const char *const buff, const char *const filename) {
+    // 以覆盖的方式写入
     write_file(1, buff, filename);
-
 }
 
-void release_buff(char ** const buff, const int valid_item_num)
-{
+void release_buff(char **const buff, const int valid_item_num) {
     for (int i = 0; i < valid_item_num; i++)
         free(buff[i]);
 }
 
-INLINE void write_file(const bool cover, const char * const buff, const char * const filename)
-{
+INLINE void write_file(const bool cover, const char *const buff,
+                       const char *const filename) {
     if (buff == NULL)
         return;
 
-    const char *write_type = cover ? "w" : "a";//1:覆盖写文件，0:追加写文件
+    const char *write_type = cover ? "w" : "a"; // 1:覆盖写文件，0:追加写文件
     FILE *fp = fopen(filename, write_type);
-    if (fp == NULL)
-    {
+    if (fp == NULL) {
         PRINT("Fail to open file %s, %s.\n", filename, strerror(errno));
         return;
     }
@@ -168,4 +183,3 @@ INLINE void write_file(const bool cover, const char * const buff, const char * c
     fputs("\n", fp);
     fclose(fp);
 }
-

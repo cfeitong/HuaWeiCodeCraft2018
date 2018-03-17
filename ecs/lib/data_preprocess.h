@@ -15,8 +15,7 @@ struct Sample {
 struct Record {
     string id;
     string flavor;
-    string date;
-    string time;
+    int time;
 };
 
 typedef map<string, vector<Record>> IdxByFlavor;
@@ -31,13 +30,10 @@ class RecordSet {
     RecordSet(const RecordSet &o) = default;
     RecordSet(RecordSet &&o) = default;
 
-    int cpu_required(string date);
-    int mem_required(string date);
     SampleByFlavor to_samples(int n, int days);
-    vector<double> to_data(int n, string flavor);
+    vector<double> to_data(int n, int days, string flavor);
 
   private:
-    IdxByDate by_date;
     IdxByFlavor by_flavor;
     DataByFlavor data_flavor;
     vector<Record> records;
