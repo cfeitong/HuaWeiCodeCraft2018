@@ -11,7 +11,6 @@
 #include <sys/timeb.h>
 #include <time.h>
 #include <unistd.h>
-#include <stdexcept>
 
 using namespace std;
 
@@ -101,7 +100,7 @@ int to_days(int year, int month, int day) {
     if (x != (std::time_t)(-1) && y != (std::time_t)(-1)) {
         difference = int(std::difftime(y, x) / (60 * 60 * 24) + 0.5);
     } else {
-        throw std::runtime_error("fail to calculate difference between dates");
+        exit(-1);
     }
     return difference;
 }
