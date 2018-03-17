@@ -92,7 +92,7 @@ char *Outputor::get_output() {
 }
 
 int to_days(int year, int month, int day) {
-    struct tm a = {0, 0, 0, 0, 1, 2000};
+    struct tm a = {0, 0, 0, 0, 1, 100};
     struct tm b = {0, 0, 0, day, month, year - 1900};
     time_t x = mktime(&a);
     time_t y = mktime(&b);
