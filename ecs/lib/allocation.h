@@ -89,23 +89,21 @@ class Allocator {
             }
             int m1 = 0x3f3f3f3f;
             int m2 = 0x3f3f3f3f;
-            int idx = 0, i = 0;
-            for (i = 0; i < res; i++) {
+            int idx = -1;
+            for (int i = 0; i < res; i++) {
                 if (bins[i].first + c1 <= lim1 && bins[i].second + c2 <= lim2) {
                     if (lim1 - bins[i].first - c1 == m1) {
                         if (lim2 - bins[i].second - c2 < m2) {
                             idx = i;
                             m2 = lim2 - bins[i].second - c2;
-                            break;
                         }
                     } else if (lim1 - bins[i].first - c1 < m1) {
                         idx = i;
                         m1 = lim1 - bins[i].first - c1;
-                        break;
                     }
                 }
             }
-            if (i == res) idx = ++res;
+            if (idx == -1) idx = res++;
             this->result[idx][elem]++;
             bins[idx].first += c1;
             bins[idx].second += c2;

@@ -48,9 +48,14 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
     for (int i = 0; i < phy; i++) {
         printf("on phy machine %d, mem = %d, cpu = %d\n", i, meta.mem_lim, meta.cpu_lim);
         auto t = alloc.count(i);
+        int mem = 0, cpu = 0;
         for (auto it : t) {
             printf("%s: %d\n", it.first.c_str(), it.second);
+            int id = flavorid(it.first);
+            mem += MEM[id] * it.second;
+            cpu += CPU[id] * it.second;
         }
+        printf("cpu used %d, mem used %d\n", cpu, mem);
         puts("-------------------------------------------------------");
     }
     printf("cpu score = %.2f\n", scores.first);
