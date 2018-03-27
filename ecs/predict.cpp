@@ -21,8 +21,9 @@ string join(char **data, int count);
 void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
                     int data_num, char *filename) {
 
-    int n = 8;
     Info meta(info);
+    int n = 3;
+    const int DAYS_PER_BLOCK = meta.days;
 
     RecordSet records = RecordSet(parse_records(join(data, data_num)));
     SampleByFlavor samples = records.to_samples(n, 5);
@@ -32,9 +33,9 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         auto &s = samples[flavor];
         lr->init(n, s);
         lr->train(200, 1e-3, 1e-1);
-        auto pred = records.to_data(10, 5, flavor);
+        auto pred = records.to_data(10, DAYS_PER_BLOCK, flavor);
         double ans = lr->predict(pred);
-        ans *= meta.days / 5.;
+        ans *= meta.days / (1. * DAYS_PER_BLOCK);
         int dd = ceil(ans);
         for (int i = 0; i < dd; i++) {
             alloc.alloc(flavor);
