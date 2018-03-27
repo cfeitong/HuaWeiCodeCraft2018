@@ -37,6 +37,7 @@ class Outputor {
   public:
     Outputor(Allocator &alloc, const Info &meta);
     char *get_output();
+    char *get_another_output(vector<vector<int>> &alloc);
 
   private:
     string result;

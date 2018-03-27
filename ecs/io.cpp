@@ -90,6 +90,35 @@ Outputor::Outputor(Allocator &alloc, const Info &meta) {
     }
     this->result = ss.str();
 }
+char *Outputor::get_another_output(vector<vector<int>> &alloc) {
+    stringstream ss;
+    int N = alloc.size();
+    int total = 0;
+    for (auto &it : alloc) {
+        for (auto &i : it) {
+            total += i;
+        }
+    }
+    ss << total << "\n";
+    for (int i = 0; i < 15; i++) {
+        int cnt = 0;
+        for (int j = 0; j < N; j++) cnt += alloc[j][i];
+        if (cnt == 0) continue;
+        ss << "flavor" << i + 1 << " " << cnt << "\n";
+    }
+    ss << "\n";
+
+    for (int i = 0; i < N; i++) {
+        ss << i + 1;
+        for (int j = 0; j < 15; j++) {
+            if (alloc[i][j] == 0) continue;
+            ss << " flavor" << j + 1 << " " << alloc[i][j];
+        }
+        ss << "\n";
+    }
+    strcpy(final_result, (ss.str()).c_str());
+    return final_result;
+}
 
 char *Outputor::get_output() {
     strcpy(final_result, this->result.c_str());
