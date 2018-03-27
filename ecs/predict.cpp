@@ -22,6 +22,8 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
                     int data_num, char *filename) {
 
     Info meta(info);
+    meta.cpu_lim = 10;
+    meta.mem_lim = 20;
     int n = 3;
     const int DAYS_PER_BLOCK = meta.days;
 
@@ -40,13 +42,13 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         for (int i = 0; i < dd; i++) {
             alloc.add_elem(flavor);
         }
-        alloc.compute();
     }
+    alloc.compute();
 
     auto scores = evaluate(alloc, meta, "data/example/TestData_2015.2.20_2015.2.27.txt");
     int phy = alloc.count_phy();
     for (int i = 0; i < phy; i++) {
-        printf("on phy machine %d, mem = %d, cpu = %d\n", i, meta.mem_lim, meta.cpu_lim);
+        printf("on phy machine %d, cpu = %d, mem = %d\n", i, meta.cpu_lim, meta.mem_lim);
         auto t = alloc.count(i);
         int mem = 0, cpu = 0;
         for (auto it : t) {

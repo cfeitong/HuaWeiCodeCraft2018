@@ -82,14 +82,14 @@ bool LinearRegression::train(int num_times, double lr, double reg) {
 
 double LinearRegression::predict(vector<double> testset) {
     vector<double> test;
-    for (int i = testset.size() - this->n; i <= testset.size() - 1; i++)
+    for (size_t i = testset.size() - this->n; i <= testset.size() - 1; i++)
         test.push_back(testset[i]);
     Sample tmp;
     tmp.X = test; tmp.y = 0;
     pdd p = this->norm(tmp);
     test = tmp.X;
     double score = 0;
-    for (int i = test.size() - this->n; i <= test.size() - 1; i++) {
+    for (size_t i = test.size() - this->n; i <= test.size() - 1; i++) {
         score += test[i] * this->w[i];
     }
     if (abs(p.second) < eps) score = score + p.first;
