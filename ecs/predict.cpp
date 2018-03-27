@@ -21,7 +21,7 @@ string join(char **data, int count);
 void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
                     int data_num, char *filename) {
 
-    int n = 8;
+    int n = 5;
     const int DAYS_PER_BLOCK = 7;
     Info meta(info);
 
