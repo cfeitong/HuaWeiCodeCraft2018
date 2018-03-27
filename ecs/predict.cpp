@@ -27,7 +27,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
 
     RecordSet records = RecordSet(parse_records(join(data, data_num)));
     SampleByFlavor samples = records.to_samples(n, 5);
-    Allocator alloc(meta.cpu_lim, meta.mem_lim);
+    Allocator alloc(meta.cpu_lim, meta.mem_lim, meta.opt_type);
     for (const auto &flavor : meta.targets) {
         unique_ptr<LinearRegression> lr(new LinearRegression());
         auto &s = samples[flavor];
@@ -38,8 +38,9 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         ans *= meta.days / (1. * DAYS_PER_BLOCK);
         int dd = ceil(ans);
         for (int i = 0; i < dd; i++) {
-            alloc.alloc(flavor);
+            alloc.add_elem(flavor);
         }
+        alloc.compute();
     }
 
     auto scores = evaluate(alloc, meta, "data/example/TestData_2015.2.20_2015.2.27.txt");

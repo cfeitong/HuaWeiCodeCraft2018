@@ -4,7 +4,7 @@
 
 using namespace std;
 
-int flavorid(string flavor) {
+int flavorid(const string &flavor) {
     int id;
     sscanf(flavor.c_str(), "flavor%d", &id);
     return id;
