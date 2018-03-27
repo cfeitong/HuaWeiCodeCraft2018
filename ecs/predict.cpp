@@ -33,12 +33,8 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
 
     RecordSet records = RecordSet(parse_records(join(data, data_num)));
     SampleByFlavor samples = records.to_samples(n, 5);
-<<<<<<< HEAD
-    Allocator alloc(meta.cpu_lim, meta.mem_lim);
-    vector<int> flavornum(15, 0);
-=======
     Allocator alloc(meta.cpu_lim, meta.mem_lim, meta.opt_type);
->>>>>>> 27ea8c605591619a023ba90e9acaff87836f4a49
+    vector<int> flavornum(15, 0);
     for (const auto &flavor : meta.targets) {
         unique_ptr<LinearRegression> lr(new LinearRegression());
         auto &s = samples[flavor];
@@ -54,30 +50,6 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
             alloc.add_elem(flavor);
         }
     }
-<<<<<<< HEAD
-    /*
-=======
-    alloc.compute();
-
->>>>>>> 27ea8c605591619a023ba90e9acaff87836f4a49
-    auto scores = evaluate(alloc, meta, "data/example/TestData_2015.2.20_2015.2.27.txt");
-    int phy = alloc.count_phy();
-    for (int i = 0; i < phy; i++) {
-        printf("on phy machine %d, cpu = %d, mem = %d\n", i, meta.cpu_lim, meta.mem_lim);
-        auto t = alloc.count(i);
-        int mem = 0, cpu = 0;
-        for (auto it : t) {
-            printf("%s: %d\n", it.first.c_str(), it.second);
-            int id = flavorid(it.first);
-            mem += MEM[id] * it.second;
-            cpu += CPU[id] * it.second;
-        }
-        printf("cpu used %d, mem used %d\n", cpu, mem);
-        puts("-------------------------------------------------------");
-    }
-    printf("cpu score = %.2f\n", scores.first);
-    printf("mem score = %.2f\n", scores.second);
-     */
     vector<vector<int>> ans;
     int l = 0, r = 200, N = -1;
     // use binary search to get answer
