@@ -32,7 +32,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         unique_ptr<LinearRegression> lr(new LinearRegression());
         auto &s = samples[flavor];
         lr->init(n, s);
-        lr->train(200, 1e-3, 1e-1);
+        lr->train(1000, 1e-4, 1e-3);
         auto pred = records.to_data(10, DAYS_PER_BLOCK, flavor);
         double ans = lr->predict(pred);
         ans *= meta.days / (1. * DAYS_PER_BLOCK);
