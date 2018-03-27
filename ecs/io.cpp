@@ -53,7 +53,6 @@ Info::Info(char **info) {
     int start = to_days(sy, sm, sd);
     int end = to_days(ey, em, ed);
     int len = end - start;
-    mem *= 1024;
 
     this->days = len;
     this->start_date = start;
