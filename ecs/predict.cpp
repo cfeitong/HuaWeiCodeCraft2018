@@ -44,7 +44,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         double ans = lr->predict(pred);
         ans *= meta.days / (1. * DAYS_PER_BLOCK);
         // get flavor id
-        flavornum[get_flavor_id(flavor)] = (int)ans;
+        flavornum[get_flavor_id(flavor) - 1] = (int)ans;
         int dd = ceil(ans);
         for (int i = 0; i < dd; i++) {
             alloc.add_elem(flavor);
@@ -64,11 +64,21 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         else l = mid + 1;
     }
     cout << N << endl;
+    cout << "-----------" << endl;
+    for (auto &i : flavornum) cout << i << " ";
+    cout << endl;
+    cout << "-----------" << endl;
+    for (auto &it : ans) {
+        for (auto &i : it) {
+            cout << i << " ";
+        }
+        cout << endl;
+    }
     Outputor output(alloc, meta);
 
 
     // 直接调用输出文件的方法输出到指定文件中(ps请注意格式的正确性，如果有解，第一行只有一个数据；第二行为空；第三行开始才是具体的数据，数据之间用一个空格分隔开)
-    write_result(output.get_another_output(ans), filename);
+    write_result(output.get_another_output(ans, meta), filename);
 }
 
 string join(char **data, int count) {

@@ -89,7 +89,7 @@ Outputor::Outputor(Allocator &alloc, const Info &meta) {
     }
     this->result = ss.str();
 }
-char *Outputor::get_another_output(vector<vector<int>> &alloc) {
+char *Outputor::get_another_output(vector<vector<int>> &alloc, const Info &meta) {
     stringstream ss;
     int N = alloc.size();
     int total = 0;
@@ -99,11 +99,15 @@ char *Outputor::get_another_output(vector<vector<int>> &alloc) {
         }
     }
     ss << total << "\n";
-    for (int i = 0; i < 15; i++) {
+    for (auto &it : meta.targets) {
+        int id = 0;
+        if (it.size() > 7) id = (it[6] - '0') * 10 + it[7] - '0';
+        else id = it[6] - '0';
         int cnt = 0;
-        for (int j = 0; j < N; j++) cnt += alloc[j][i];
-        if (cnt == 0) continue;
-        ss << "flavor" << i + 1 << " " << cnt << "\n";
+        for (auto &i : alloc) {
+            cnt += i[id - 1];
+        }
+        ss << it << " " << cnt << "\n";
     }
     ss << "\n";
     ss << N << "\n";
