@@ -4,6 +4,7 @@
 #include <cstdio>
 #include <map>
 #include <sstream>
+#include <utility>
 #include <vector>
 #include <cmath>
 #include <iostream>
@@ -15,6 +16,7 @@ RecordSet::RecordSet(const vector<Record> &records) {
     this->records = records;
     for (auto &rec : records) {
         this->by_flavor[rec.flavor].push_back(rec);
+        this->by_date[rec.time].push_back(rec);
     }
     // Convert Record to double vector
     for (auto &fr : this->by_flavor) {
@@ -73,6 +75,10 @@ vector<double> RecordSet::to_data(int n, int days, string flavor) {
     return ret;
 }
 
+vector<Record> RecordSet::at_date(int day) {
+    return this->by_date[day];
+}
+
 Record parse_line(string line) {
     stringstream ss;
     ss << line;
@@ -85,10 +91,10 @@ Record parse_line(string line) {
     return ret;
 }
 
-vector<Record> parse(string content) {
+vector<Record> parse_records(string content) {
     vector<Record> ret;
-    vector<string> text = split(content);
-    for (auto line : text) {
+    vector<string> text = split(move(content));
+    for (const auto &line : text) {
         Record record = parse_line(line);
         ret.push_back(record);
     }

@@ -23,6 +23,8 @@ extern void release_buff(char **const buff, const int valid_item_num);
 
 struct Info {
     int days;               // how many day to predict
+    int start_date;
+    int end_date;
     int cpu_lim;            // cpu per physic machine
     int mem_lim;            // memory per physic machine
     vector<string> targets; // target flavor

@@ -15,7 +15,11 @@ class Allocator {
         return this->result[phy_id-1][flavor];
     }
 
-    int count_phy() {
+    map<string, int> count(int phy_id) {
+        return this->result[phy_id];
+    }
+
+    int count_phy() const {
         return this->result.size();
     }
 
@@ -48,6 +52,16 @@ class Allocator {
             alloc(flavor);
         }
     }
+
+    map<string, int> flavor_count() {
+        map<string, int> ret;
+        for (const auto &phy : this->result) {
+            for (const auto &vir : phy.second) {
+                ret[vir.first] += vir.second;
+            }
+        }
+        return ret;
+    };
 
   private:
     map<int, pair<int, int>> resource;

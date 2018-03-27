@@ -1,0 +1,20 @@
+Begin date/time is: Wed Mar 21 20:55:24 2018
+ 	used time is 0 s 0 ms.
+Open file data/example/TrainData_2015.1.1_2015.2.19.txt OK.
+There are 371 lines in file data/example/TrainData_2015.1.1_2015.2.19.txt.
+data file line num is :371 
+Open file data/example/input_5flavors_cpu_7days.txt OK.
+There are 13 lines in file data/example/input_5flavors_cpu_7days.txt.
+input file line num is :13 
+on phy machine 0, mem = 131072, cpu = 56
+flavor1: 2
+flavor2: 3
+flavor3: 2
+flavor4: 1
+flavor5: 5
+-------------------------------------------------------
+cpu score = 9.17
+mem score = 8.02
+Open file out.txt OK.
+End date/time is: Wed Mar 21 20:55:25 2018
+ 	used time is 0 s 96 ms.

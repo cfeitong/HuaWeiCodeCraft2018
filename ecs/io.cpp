@@ -1,16 +1,17 @@
 #include "lib_io.h"
 #include "lib_time.h"
-#include <assert.h>
-#include <errno.h>
-#include <signal.h>
+#include <cassert>
+#include <cerrno>
+#include <csignal>
 #include <sstream>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <string>
 #include <sys/timeb.h>
-#include <time.h>
+#include <ctime>
 #include <unistd.h>
+#include <cmath>
 
 using namespace std;
 
@@ -49,10 +50,14 @@ Info::Info(char **info) {
     sscanf(info[line++], "%d-%d-%d", &sy, &sm, &sd);
     int ey, em, ed;
     sscanf(info[line++], "%d-%d-%d", &ey, &em, &ed);
-    int len = to_days(ey, em, ed) -  to_days(sy, sm, sd);
+    int start = to_days(sy, sm, sd);
+    int end = to_days(ey, em, ed);
+    int len = end - start;
     mem *= 1024;
 
     this->days = len;
+    this->start_date = start;
+    this->end_date = end;
     this->cpu_lim = cpu;
     this->mem_lim = mem;
     this->targets = tar;
@@ -62,12 +67,12 @@ Info::Info(char **info) {
 Outputor::Outputor(Allocator &alloc, const Info &meta) {
     stringstream ss;
     int total = 0;
-    for (string flavor : meta.targets) {
+    for (const string &flavor : meta.targets) {
         int cnt = alloc.count_vir(flavor);
         total += cnt;
     }
     ss << total << "\n";
-    for (string flavor : meta.targets) {
+    for (const string &flavor : meta.targets) {
         int cnt = alloc.count_vir(flavor);
         ss << flavor << " " << cnt << "\n";
     }
@@ -77,7 +82,7 @@ Outputor::Outputor(Allocator &alloc, const Info &meta) {
     ss << phy_count << "\n";
     for (int i = 1; i <= phy_count; i++) {
         ss << i;
-        for (string flavor : meta.targets) {
+        for (const string &flavor : meta.targets) {
             int cnt = alloc.count(i, flavor);
             ss << " " << flavor << " " << cnt;
         }
@@ -96,9 +101,9 @@ int to_days(int year, int month, int day) {
     struct tm b = {0, 0, 0, day, month, year - 1900};
     time_t x = mktime(&a);
     time_t y = mktime(&b);
-    int difference = 0;
+    long difference = 0;
     if (x != (time_t)(-1) && y != (time_t)(-1)) {
-        difference = int(difftime(y, x) / (60 * 60 * 24) + 0.5);
+        difference = lround(difftime(y, x) / (60 * 60 * 24));
     } else {
         exit(-1);
     }

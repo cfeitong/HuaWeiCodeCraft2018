@@ -2,11 +2,13 @@
 #include "allocation.h"
 #include "data_preprocess.h"
 #include "linear_regression.h"
+#include "evaluation.h"
+
 #include <cmath>
 #include <iostream>
 #include <memory>
 #include <sstream>
-#include <stdio.h>
+#include <cstdio>
 #include <string>
 #include <cstring>
 
@@ -19,24 +21,38 @@ string join(char **data, int count);
 void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
                     int data_num, char *filename) {
 
-    int n = 3;
+    int n = 8;
     Info meta(info);
 
-    RecordSet records = RecordSet(parse(join(data, data_num)));
-    SampleByFlavor samples = records.to_samples(n, meta.days);
+    RecordSet records = RecordSet(parse_records(join(data, data_num)));
+    SampleByFlavor samples = records.to_samples(n, 5);
     Allocator alloc(meta.cpu_lim, meta.mem_lim);
-    for (auto flavor : meta.targets) {
+    for (const auto &flavor : meta.targets) {
         unique_ptr<LinearRegression> lr(new LinearRegression());
         auto &s = samples[flavor];
         lr->init(n, s);
-        lr->train(1000, 1e-3, 1e-1);
-        auto pred = records.to_data(10, meta.days, flavor);
+        lr->train(200, 1e-3, 1e-1);
+        auto pred = records.to_data(10, 5, flavor);
         double ans = lr->predict(pred);
+        ans *= meta.days / 5.;
         int dd = ceil(ans);
         for (int i = 0; i < dd; i++) {
             alloc.alloc(flavor);
         }
     }
+
+    auto scores = evaluate(alloc, meta, "data/example/TestData_2015.2.20_2015.2.27.txt");
+    int phy = alloc.count_phy();
+    for (int i = 0; i < phy; i++) {
+        printf("on phy machine %d, mem = %d, cpu = %d\n", i, meta.mem_lim, meta.cpu_lim);
+        auto t = alloc.count(i);
+        for (auto it : t) {
+            printf("%s: %d\n", it.first.c_str(), it.second);
+        }
+        puts("-------------------------------------------------------");
+    }
+    printf("cpu score = %.2f\n", scores.first);
+    printf("mem score = %.2f\n", scores.second);
 
     Outputor output(alloc, meta);
 
@@ -47,7 +63,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
 string join(char **data, int count) {
     stringstream ss;
     for (int i = 0; i < count; i++) {
-        if (data[i] == NULL)
+        if (data[i] == nullptr)
             break;
         ss << data[i];
     }

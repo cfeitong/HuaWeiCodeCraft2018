@@ -4,3 +4,5 @@ bin/
 build/
 ecs.tar.gz
 out.txt
+cmake-build-debug
+.idea/
