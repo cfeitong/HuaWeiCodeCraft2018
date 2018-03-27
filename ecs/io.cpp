@@ -106,7 +106,7 @@ char *Outputor::get_another_output(vector<vector<int>> &alloc) {
         ss << "flavor" << i + 1 << " " << cnt << "\n";
     }
     ss << "\n";
-
+    ss << N << "\n";
     for (int i = 0; i < N; i++) {
         ss << i + 1;
         for (int j = 0; j < 15; j++) {

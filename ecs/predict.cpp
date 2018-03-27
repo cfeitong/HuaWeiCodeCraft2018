@@ -141,7 +141,7 @@ bool distribute(vector<int> &flavor, int cpu_tol, int mem_tol, int N, vector<vec
     set_matrix(&mat, val);
 
 
-    create_matrix(&goal_mat, 1, N * 15);
+    create_matrix(&goal_mat, 1, interval);
     set_matrix(&goal_mat, goal);
 
     initSimplexModel(mat, goal_mat, NULL);
