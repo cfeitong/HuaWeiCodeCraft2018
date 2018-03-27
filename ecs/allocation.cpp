@@ -100,6 +100,7 @@ void Allocator::compute() {
                 } else if (lim1 - bins[i].first - c1 < m1) {
                     idx = i;
                     m1 = lim1 - bins[i].first - c1;
+                    m2 = min(m2, lim2 - bins[i].second - c2);
                 }
             }
         }
