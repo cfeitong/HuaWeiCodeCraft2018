@@ -4,6 +4,8 @@
 #include <vector>
 using namespace std;
 
+const double eps = 1e-6;
+
 bool LinearRegression::init(int n, vector<Sample> ts) {
     this->n = n;
     this->trainset = ts;
@@ -46,7 +48,7 @@ pdvd LinearRegression::loss(double reg) {
 
 pdd LinearRegression::norm(Sample &sample) {
     double mn = 0;
-    double var = 1e-6;
+    double var = 0;
     int N = sample.X.size();
     for (auto &i : sample.X) mn += i;
     mn = mn / N;
@@ -54,6 +56,11 @@ pdd LinearRegression::norm(Sample &sample) {
         var += (i - mn) * (i - mn);
     }
     var = sqrt(var / N);
+    if (abs(var) < eps) {
+        for (auto &i : sample.X) i = i - mn;
+        sample.y = sample.y - mn;
+        return pdd(mn, var);
+    }
     for(auto &i : sample.X) {
         i = (i - mn) / var;
     }
@@ -85,7 +92,8 @@ double LinearRegression::predict(vector<double> testset) {
     for (int i = test.size() - this->n; i <= test.size() - 1; i++) {
         score += test[i] * this->w[i];
     }
-    score = score * p.second + p.first;
+    if (abs(p.second) < eps) score = score + p.first;
+    else score = score * p.second + p.first;
     return score;
 }
 
