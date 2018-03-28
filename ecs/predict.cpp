@@ -115,8 +115,7 @@ bool distribute(vector<int> &flavor, int cpu_tol, int mem_tol, int N, vector<vec
     assert(N < 1000);
     float *val = (float*)malloc((15001 * 2030) * sizeof(float));
     //float val[(10*15 + 1) * (2*10 + 30)];
-    memset(val, 0, sizeof(val));
-    int margin = N * 15;
+    fill(val, val+(15001 * 2030), 0);
     int interval = N * 15 + 1;
     for (int i = 0; i < N; i++) {
         int s = i * 15 + 1;
@@ -142,7 +141,7 @@ bool distribute(vector<int> &flavor, int cpu_tol, int mem_tol, int N, vector<vec
 
     //float goal[ * 15 + 1];
     float *goal = (float*)malloc((15001) * sizeof(float));
-    memset(goal, 0, sizeof(goal));
+    fill(goal, goal+(15001), 0);
     int max;
     int *solution = (int *)malloc((1500) * sizeof(int));
     //int solution[6 * 15];
@@ -178,6 +177,8 @@ bool distribute(vector<int> &flavor, int cpu_tol, int mem_tol, int N, vector<vec
 
     delete_matrix(&mat);
     delete_matrix(&goal_mat);
+    free(goal);
+    free(val);
 
     return true;
 }
