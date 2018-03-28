@@ -95,6 +95,7 @@ double predict(const vector<double> &dataArray) {
     for (int k = 0; k < cnt; ++k) {
         sumPredict += ((double) tmpPredict[k]) / (double) cnt;
     }
+    printf("predict = %.2f\n", sumPredict);
     return sumPredict;
 }
 
