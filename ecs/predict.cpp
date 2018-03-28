@@ -6,6 +6,7 @@
 #include "common.h"
 #include "matrix.h"
 #include "simplex.h"
+#include "ARIMAModel.h"
 
 #include <cmath>
 #include <iostream>
@@ -19,7 +20,11 @@
 using namespace std;
 
 string join(char **data, int count);
+
+double predict(const vector<double> &dataArray);
+
 int get_flavor_id(string flavor);
+
 bool distribute(vector<int> &flavor, int cpu_tol, int mem_tol, int N, vector<vector<int>> &ans);
 
 
@@ -36,19 +41,10 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
     Allocator alloc(meta.cpu_lim, meta.mem_lim, meta.opt_type);
     vector<int> flavornum(15, 0);
     for (const auto &flavor : meta.targets) {
-        unique_ptr<LinearRegression> lr(new LinearRegression());
-        auto &s = samples[flavor];
-        lr->init(n, s);
-        lr->train(1000, 1e-4, 1e-3);
         auto pred = records.to_data(10, DAYS_PER_BLOCK, flavor);
-        double ans = lr->predict(pred);
+        double ans = predict(pred);
         ans *= meta.days / (1. * DAYS_PER_BLOCK);
-        // get flavor id
-        flavornum[get_flavor_id(flavor) - 1] = (int)ans;
-        int dd = ceil(ans);
-        for (int i = 0; i < dd; i++) {
-            alloc.add_elem(flavor);
-        }
+        flavornum[get_flavor_id(flavor) - 1] = (int) ans;
     }
     vector<vector<int>> ans;
     int l = 0, r = 200, N = -1;
@@ -60,8 +56,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         if (isok) {
             r = mid - 1;
             N = mid;
-        }
-        else l = mid + 1;
+        } else l = mid + 1;
     }
     cout << N << endl;
     cout << "-----------" << endl;
@@ -81,6 +76,40 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
     write_result(output.get_another_output(ans, meta), filename);
 }
 
+double predict(const vector<double> &dataArray) {
+    ARIMAModel *arima = new ARIMAModel(dataArray);
+    int period = 7;
+    int modelCnt = 5;
+    int cnt = 0;
+    std::vector<std::vector<int>> list;
+    std::vector<int> tmpPredict(modelCnt);
+
+    for (int k = 0; k < modelCnt; ++k) { //控制通过多少组参数进行计算最终的结果
+        std::vector<int> bestModel = arima->getARIMAModel(period, list, k != 0);
+        //std::cout<<bestModel.size()<<std::endl;
+
+        if (bestModel.empty()) {
+            tmpPredict[k] = (int) dataArray[dataArray.size() - period];
+            cnt++;
+            break;
+        } else {
+            //std::cout<<bestModel[0]<<bestModel[1]<<std::endl;
+            int predictDiff = arima->predictValue(bestModel[0], bestModel[1], period);
+            //std::cout<<"fuck"<<std::endl;
+            tmpPredict[k] = arima->aftDeal(predictDiff, period);
+            cnt++;
+        }
+        std::cout << bestModel[0] << " " << bestModel[1] << std::endl;
+        list.push_back(bestModel);
+    }
+
+    double sumPredict = 0.0;
+    for (int k = 0; k < cnt; ++k) {
+        sumPredict += ((double) tmpPredict[k]) / (double) cnt;
+    }
+    return sumPredict;
+}
+
 string join(char **data, int count) {
     stringstream ss;
     for (int i = 0; i < count; i++) {
@@ -96,11 +125,10 @@ int get_flavor_id(string flavor) {
     // e.g. flavor11 return 11
     if (flavor.size() > 7) {
         return (flavor[6] - '0') * 10 + flavor[7] - '0';
-    }
-    else return flavor[6] - '0';
+    } else return flavor[6] - '0';
 }
 
-int flavor_cpu[] = {1, 1, 1, 2, 2, 2, 4, 4, 4, 8, 8, 8,16 ,16, 16};
+int flavor_cpu[] = {1, 1, 1, 2, 2, 2, 4, 4, 4, 8, 8, 8, 16, 16, 16};
 int flavor_mem[] = {1, 2, 4, 2, 4, 8, 4, 8, 16, 8, 16, 32, 16, 32, 64};
 
 bool distribute(vector<int> &flavor, int cpu_tol, int mem_tol, int N, vector<vector<int>> &ans) {
@@ -113,10 +141,9 @@ bool distribute(vector<int> &flavor, int cpu_tol, int mem_tol, int N, vector<vec
     //int mem_tol = 128;
     //const int N = 6;
     assert(N < 1000);
-    float *val = (float*)malloc((15001 * 2030) * sizeof(float));
+    float *val = (float *) malloc((15001 * 2030) * sizeof(float));
     //float val[(10*15 + 1) * (2*10 + 30)];
-    memset(val, 0, sizeof(val));
-    int margin = N * 15;
+    fill(val, val+(15001 * 2030), 0);
     int interval = N * 15 + 1;
     for (int i = 0; i < N; i++) {
         int s = i * 15 + 1;
@@ -133,7 +160,7 @@ bool distribute(vector<int> &flavor, int cpu_tol, int mem_tol, int N, vector<vec
         val[st + i * interval] = flavor[i];
         val[st + (i + 15) * interval] = -flavor[i];
         for (int j = 1; j < interval; j++) {
-            if ((j-i-1)%15 == 0) {
+            if ((j - i - 1) % 15 == 0) {
                 val[st + i * interval + j] = 1;
                 val[st + (i + 15) * interval + j] = -1;
             }
@@ -141,10 +168,10 @@ bool distribute(vector<int> &flavor, int cpu_tol, int mem_tol, int N, vector<vec
     }
 
     //float goal[ * 15 + 1];
-    float *goal = (float*)malloc((15001) * sizeof(float));
-    memset(goal, 0, sizeof(goal));
+    float *goal = (float *) malloc((15001) * sizeof(float));
+    fill(goal, goal+15001, 0);
     int max;
-    int *solution = (int *)malloc((1500) * sizeof(int));
+    int *solution = (int *) malloc((1500) * sizeof(int));
     //int solution[6 * 15];
 
     create_matrix(&mat, 2 * N + 30, interval);
