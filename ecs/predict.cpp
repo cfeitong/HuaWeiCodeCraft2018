@@ -43,6 +43,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
     for (const auto &flavor : meta.targets) {
         auto pred = records.to_data(10, DAYS_PER_BLOCK, flavor);
         double ans = predict(pred);
+        printf("predict ans = %.2f\n", ans);
         ans *= meta.days / (1. * DAYS_PER_BLOCK);
         flavornum[get_flavor_id(flavor) - 1] = (int) ans;
     }
@@ -58,17 +59,6 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
             N = mid;
         } else l = mid + 1;
     }
-    cout << N << endl;
-    cout << "-----------" << endl;
-    for (auto &i : flavornum) cout << i << " ";
-    cout << endl;
-    cout << "-----------" << endl;
-    for (auto &it : ans) {
-        for (auto &i : it) {
-            cout << i << " ";
-        }
-        cout << endl;
-    }
     Outputor output(alloc, meta);
 
 
@@ -78,7 +68,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
 
 double predict(const vector<double> &dataArray) {
     ARIMAModel *arima = new ARIMAModel(dataArray);
-    int period = 7;
+    int period = 1;
     int modelCnt = 5;
     int cnt = 0;
     std::vector<std::vector<int>> list;
@@ -99,7 +89,6 @@ double predict(const vector<double> &dataArray) {
             tmpPredict[k] = arima->aftDeal(predictDiff, period);
             cnt++;
         }
-        std::cout << bestModel[0] << " " << bestModel[1] << std::endl;
         list.push_back(bestModel);
     }
 

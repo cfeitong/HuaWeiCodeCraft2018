@@ -8,21 +8,21 @@
 #include <vector>
 #include "ARMAMath.h"
 
-class ARModel{
-private:
+class ARModel {
+  private:
     std::vector<double> data;
     int p;
 
-public:
-    ARModel(std::vector<double> data,int p){
-        this->data.assign(data.begin(),data.end());
-        this->p=p;
+  public:
+    ARModel(std::vector<double> data, int p) {
+        this->data.assign(data.begin(), data.end());
+        this->p = p;
     }
 
-    std::vector<std::vector<double> > solveCoeOfAR(){
-        std::vector<std::vector<double> > vec;
+    std::vector<std::vector<double>> solveCoeOfAR() {
+        std::vector<std::vector<double>> vec;
         ARMAMath ar_math;
-        std::vector<double>  arCoe(ar_math.computeARCoe(this->data,this->p));
+        std::vector<double> arCoe(ar_math.computeARCoe(this->data, this->p));
         vec.push_back(arCoe);
         return vec;
     }
