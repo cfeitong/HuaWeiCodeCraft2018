@@ -5,20 +5,21 @@
 #ifndef __MATRIX__
 #define __MATRIX__
 
-#include "common.h"
+#include <cstdio>
+#include <vector>
+using namespace std;
 
-typedef struct {
-    int		row,col;
-    float**	mem;
-}MATRIX;
+struct Mat {
+    int row, col;
+    vector<vector<float>> mat;
+    Mat() {}
+    Mat(int r, int c) : mat(r, vector<float>(c, 0)), row(r), col(c) {}
+};
 
-u8 create_matrix(MATRIX* mat, int row, int col);
-void delete_matrix(MATRIX* mat);
-void set_matrix(MATRIX* mat, float* val);
-void copy_matrix(MATRIX* des_mat, MATRIX src_mat);
-void matrix_expand_row(MATRIX* mat, u32 exp_num, float* val);
-void matrix_expand_column(MATRIX* mat, u32 exp_num, float* val);
-void matrix_remove_column(MATRIX* mat, int col_index);
-void print_matrix(MATRIX mat);
+void copy_mat(Mat &mat1, Mat &mat2);
+void mat_expand_row(Mat &mat, int num, vector<float> val);
+void mat_expand_col(Mat &mat, int num, vector<float> val);
+void mat_remove_col(Mat &mat, int col_idx);
+void show_mat(Mat &mat);
 
 #endif

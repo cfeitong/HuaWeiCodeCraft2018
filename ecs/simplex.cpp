@@ -2,21 +2,17 @@
 // Created by wdk on 2018/3/27.
 //
 #include "simplex.h"
-#include <string.h>
-#include <stdlib.h>
 #include <math.h>
+#include <cassert>
 
 #define MAX_VAL_NUM		6144		/* The maximul variable number */
-#define MAX_VAL_NAME	8		/* The maximul variable name */
 
-static MATRIX temp_mat;
-static MATRIX goal_mat;
-static char VarName[MAX_VAL_NUM][MAX_VAL_NAME];
-static u32 VarName_Map[MAX_VAL_NUM] = {0};
+static Mat temp_mat;
+static Mat goal_mat;
+
+static int VarName_Map[MAX_VAL_NUM] = {0};
 static int BVarOff;
-static float* coefbuff;
-static u8 expand_flag;
-static u8 using_name;
+static bool expand_flag;
 
 static int temp_z_col;
 
@@ -28,114 +24,60 @@ float accuracy = 0.01f;
 #define toInt(a)	(a>0 ? (int)(a+0.5f) : (int)(a-0.5f))
 
 #define RESERVE_SPACE		3
-#define SHOW_RESULT			0
 
-void showResult(MATRIX sf_mat, u8 goal)
-{
-    int row,col;
-
-    if(using_name){
-        for(row = 0 ; row < sf_mat.row ; row++){
-            if(goal)
-                printf("\nU = ");
-            else
-                printf("\n%s = ", VarName[VarName_Map[row + BVarOff]]);
-            for(col = 0 ; col < sf_mat.col ; col++){
-                printf("%.2f%s	", sf_mat.mem[row][col], VarName[VarName_Map[col]]);
-            }
-        }
-        printf("\n");
-    }else{
-        for(row = 0 ; row < sf_mat.row ; row++){
-            if(goal)
-                printf("\nU = ");
-            for(col = 0 ; col < sf_mat.col ; col++){
-                printf("%.2f	", sf_mat.mem[row][col]);
-            }
-        }
-        printf("\n");
-    }
-}
 
 /************************************************************************
 	forall b_i>=0, return 0,   otherwise: return 1
 ************************************************************************/
-u8 should_expand(MATRIX mat)
-{
-    int row;
-
-    for(row = 0 ; row < mat.row ; row++){
-        /* the first column is b_i */
-        if(mat.mem[row][0] < 0)
-            return 1;
+bool should_expand(Mat &mat) {
+    for (int r = 0; r < mat.row; r++) {
+        if (mat.mat[r][0] < 0.0)
+            return true;
     }
-
-    return 0;
+    return false;
 }
 
-u8 addNonBasicVarName(MATRIX sf_mat, char* name)
+bool addNonBasicVarName(Mat sf_mat)
 {
     if(sf_mat.col >= BVarOff){
         printf("err, non-basic var reserve space is not enough\n");
         return 1;
     }
-
-    if(using_name)
-        strcpy(VarName[sf_mat.col], name);
     VarName_Map[sf_mat.col] = sf_mat.col;
 
     return 0;
 }
 
-void resetSimplexModel(MATRIX* sf_mat)
-{
+void resetSimplexModel(Mat &sf_mat) {
     int i;
-
-    //expand_flag = 0;
-
-    if(should_expand(*sf_mat)){
-        float* val;
-
-        if(!expand_flag){
-            //not expand before, we need allocate name space for z
-            addNonBasicVarName(*sf_mat, "z");
-        }else{
-            //VarName_Map[temp_z_col] = sf_mat->col-1;
-
-            for(i = temp_z_col ; i < sf_mat->col ; i++){
+    if (should_expand(sf_mat)) {
+        if (!expand_flag) {
+            addNonBasicVarName(sf_mat);
+        }
+        else {
+            for(i = temp_z_col ; i < sf_mat.col ; i++){
                 VarName_Map[i] = VarName_Map[i+1];
             }
-            VarName_Map[i] = sf_mat->col;
+            VarName_Map[i] = sf_mat.col;
         }
-
-        val = (float*)malloc(sf_mat->row * sizeof(float));
-        for(i = 0 ; i < sf_mat->row ; i++)
-            val[i] = 1.0f;	/* each row add a fresh variable z, for z>=0 */
-
-        matrix_expand_column(sf_mat, 1, val);
-        free(val);
-
+        vector<float> val(sf_mat.row, 1.0);
+        mat_expand_col(sf_mat, 1, val);
         expand_flag = 1;
-    }else{
+    }
+    else {
         expand_flag = 0;
     }
-
-    free(coefbuff);
-    coefbuff = (float*)malloc(sf_mat->row*sizeof(float));
 }
 
 /************************************************************************
 Set goal form, calculate the maximum value of goal form.
 The last column of mat is constant
 ************************************************************************/
-void setGoalForm(MATRIX mat)
-{
-    copy_matrix(&goal_mat, mat);
-    if(expand_flag){
-        /* add -z for goal form */
-        float val = -1.0f;
-        //float val = 0.0f;
-        matrix_expand_column(&goal_mat, 1, &val);
+void setGoalForm(Mat &mat) {
+    copy_mat(goal_mat, mat);
+    if (expand_flag) {
+        vector<float> val(goal_mat.row, -1.0);
+        mat_expand_col(goal_mat, 1, val);
     }
 }
 
@@ -145,13 +87,11 @@ the first column of matrix stores constant b_i
 
 Slack Form: b_i - A * x_i >= 0
 ************************************************************************/
-void createSlackForm(MATRIX* mat)
-{
-    int row, col;
-
-    for(row = 0 ; row < mat->row ; row++)
-        for(col = 1 ; col < mat->col ; col++)
-            mat->mem[row][col] = -mat->mem[row][col];
+void createSlackForm(Mat &mat) {
+    for (int r = 0; r < mat.row; r++) {
+        for (int c = 1; c < mat.col; c++)
+            mat.mat[r][c] = -mat.mat[r][c];
+    }
 }
 
 /************************************************************************
@@ -167,55 +107,43 @@ int findNextNonBasicVar(void)
         /* ignore z */
         if( expand_flag && VarName_Map[i] == goal_mat.col-1 )
             continue;
-        if( goal_mat.mem[0][i] > accuracy )
+        if( goal_mat.mat[0][i] > accuracy )
             return i;
     }
 
     return -1;
 }
 
-int findNextNonBasicVarWithZ(MATRIX sf_mat, int row)
-{
-    int col;
-
-    /* we calculate the min(z) here, so find negative coefficient */
-    for(col = 1 ; col < sf_mat.col ; col++){
-        //TODO: need goal_mat.mem[0][col]>0?
-        //if( lt(sf_mat.mem[row][col], 0.0f) && lt(0.0f, goal_mat.mem[0][col]) ){
-        if( lt(sf_mat.mem[row][col], 0.0f) ){
+int findNextNonBasicVarWithZ(Mat sf_mat, int row) {
+    for (int col = 1; col < sf_mat.col; col++) {
+        if (lt(sf_mat.mat[row][col], 0.0f)) {
             return col;
         }
     }
-
     return -1;
 }
 
 /************************************************************************
      find most negative b_i to be pivot with z
 ************************************************************************/
-PIVOT findMostNegativePivot(MATRIX sf_mat)
-{
-    int row;
+PIVOT findMostNegativePivot(Mat sf_mat) {
     float neg_b;
     PIVOT pivot;
 
     pivot.bvar = -1;
-    pivot.nbvar = sf_mat.col-1;	 /* swap z and basic variable */
+    pivot.nbvar = sf_mat.col - 1;
 
     neg_b = -accuracy;
-    for(row = 0 ; row < sf_mat.row ; row++){
-        if(sf_mat.mem[row][0] < neg_b){
-            neg_b = sf_mat.mem[row][0];
-            pivot.bvar = row;
+    for (int r = 0; r < sf_mat.row; r++) {
+        if (sf_mat.mat[r][0] < neg_b) {
+            neg_b = sf_mat.mat[r][0];
+            pivot.bvar = r;
         }
     }
-
     return pivot;
 }
 
-PIVOT findPivot(MATRIX sf_mat, int nbvar)
-{
-    int row;
+PIVOT findPivot(Mat sf_mat, int nbvar) {
     float tight_constrain = 100000000.0f;
     float temp_constrain;
     PIVOT pivot;
@@ -223,11 +151,11 @@ PIVOT findPivot(MATRIX sf_mat, int nbvar)
     pivot.bvar = -1;	/* -1 means doesn't find a valid pivot */
     pivot.nbvar = nbvar;
 
-    for(row = 0 ; row < sf_mat.row ; row++){
-        if( eq(0.0f, sf_mat.mem[row][nbvar]) || sf_mat.mem[row][nbvar] > 0.0f )
+    for (int row = 0 ; row < sf_mat.row ; row++){
+        if (eq(0.0f, sf_mat.mat[row][nbvar]) || sf_mat.mat[row][nbvar] > 0.0f)
             continue;
-        temp_constrain = sf_mat.mem[row][0] / -sf_mat.mem[row][nbvar];
-        if( temp_constrain < tight_constrain ){
+        temp_constrain = sf_mat.mat[row][0] / -sf_mat.mat[row][nbvar];
+        if (temp_constrain < tight_constrain){
             tight_constrain = temp_constrain;
             pivot.bvar = row;
         }
@@ -248,127 +176,50 @@ void swapNameSpace(PIVOT pivot)
 /************************************************************************
         swap basic var and non-basic var
 ************************************************************************/
-void swapPivot(MATRIX* sf_mat, PIVOT pivot)
-{
-    int col;
-    float temp;
-
-    temp = sf_mat->mem[pivot.bvar][pivot.nbvar];
-    for(col = 0 ; col < sf_mat->col ; col++){
-        if(col == pivot.nbvar)
-            sf_mat->mem[pivot.bvar][col] = 1.0f / temp;
+void swapPivot(Mat &sf_mat, PIVOT pivot) {
+    float temp = sf_mat.mat[pivot.bvar][pivot.nbvar];
+    for (int c = 0; c < sf_mat.col; c++) {
+        if (c == pivot.nbvar)
+            sf_mat.mat[pivot.bvar][c] = 1.0/temp;
         else
-            sf_mat->mem[pivot.bvar][col] /= -temp;
+            sf_mat.mat[pivot.bvar][c] /= -temp;
     }
 }
 
-void replaceNewBasicVar(MATRIX* sf_mat, PIVOT pivot)
-{
-    int row, col;
-
-    for(row = 0 ; row < sf_mat->row ; row++){
-        if(row == pivot.bvar)
-            continue;
-
-        coefbuff[row] = sf_mat->mem[row][pivot.nbvar];
-
-        for(col = 0 ; col < sf_mat->col ; col++){
-            if(col == pivot.nbvar)
-                sf_mat->mem[row][col] = coefbuff[row] * sf_mat->mem[pivot.bvar][col];
+void replaceNewBasicVar(Mat &sf_mat, PIVOT pivot) {
+    for (int r = 0; r < sf_mat.row; r++) {
+        if (r == pivot.bvar) continue;
+        // coefbuff[row] = sf_mat->mem[row][pivot.nbvar];
+        auto coefbuff = sf_mat.mat[r][pivot.nbvar];
+        for (int c = 0; c < sf_mat.col; c++) {
+            if (c == pivot.nbvar)
+                sf_mat.mat[r][c] = coefbuff * sf_mat.mat[pivot.bvar][c];
             else
-                sf_mat->mem[row][col] += coefbuff[row] * sf_mat->mem[pivot.bvar][col];
+                sf_mat.mat[r][c] += coefbuff * sf_mat.mat[pivot.bvar][c];
         }
     }
 }
-
-void updateGoalForm(MATRIX* gf_mat, MATRIX* sf_mat, PIVOT pivot)
-{
-    int col;
-    float temp;
-
-    temp = gf_mat->mem[0][pivot.nbvar];
-
-    for(col = 0 ; col < gf_mat->col ; col++){
-        if(col == pivot.nbvar)
-            gf_mat->mem[0][col] = temp * sf_mat->mem[pivot.bvar][col];
+void updateGoalForm(Mat &gf_mat, Mat &sf_mat, PIVOT pivot) {
+    float tmp = gf_mat.mat[0][pivot.nbvar];
+    for (int c = 0; c < gf_mat.col; c++) {
+        if (c == pivot.nbvar)
+            gf_mat.mat[0][c] = tmp * sf_mat.mat[pivot.bvar][c];
         else
-            gf_mat->mem[0][col] += temp * sf_mat->mem[pivot.bvar][col];
+            gf_mat.mat[0][c] += tmp * sf_mat.mat[pivot.bvar][c];
     }
 }
 
 /************************************************************************
 swap pivot and reformulate slack form
 ************************************************************************/
-void reformulation(MATRIX* sf_mat, PIVOT pivot)
-{
-    /* step1: swap basic var and non-basic var */
+void reformulation(Mat &sf_mat, PIVOT pivot) {
     swapNameSpace(pivot);
     swapPivot(sf_mat, pivot);
-    /* step2: replace new basic var with non-basic var */
     replaceNewBasicVar(sf_mat, pivot);
-    /* step3: update goal form */
-    updateGoalForm(&goal_mat, sf_mat, pivot);
+    updateGoalForm(goal_mat, sf_mat, pivot);
 }
 
-void dispSolution(MATRIX sf_mat, u8 show_res)
-{
-    int row, col;
-
-    if(show_res){
-        showResult(goal_mat, 1);
-        showResult(temp_mat, 0);
-        printf("\nSolution:\n");
-    }
-    for(col = 1 ; col < sf_mat.col ; col++){
-        float solution = 0.0f;
-
-        for(row = 0 ; row < sf_mat.row ; row++){
-            if(VarName_Map[row + BVarOff] == col){
-                solution = sf_mat.mem[row][0];
-            }
-        }
-        if(show_res){
-            if(using_name)
-                printf("%s=%.2f, ", VarName[col], solution);
-            else
-                printf("%.2f, ", solution);
-        }
-    }
-    if(show_res)
-        printf("U=%.2f\n", goal_mat.mem[0][0]);
-}
-
-void dispIntSolution(MATRIX sf_mat, u8 show_res)
-{
-    int row, col;
-
-    if(show_res){
-        showResult(goal_mat, 1);
-        showResult(temp_mat, 0);
-        printf("\nInterger Solution:\n");
-    }
-
-    for(col = 1 ; col < temp_mat.col-expand_flag ; col++){
-        int sol = 0;
-
-        for(row = 0 ; row < temp_mat.row ; row++){
-            if(VarName_Map[row + BVarOff] == col){
-                sol = toInt(temp_mat.mem[row][0]);
-            }
-        }
-        if(show_res){
-            if(using_name)
-                printf("%s=%d, ", VarName[col], sol);
-            else
-                printf("%d, ", sol);
-        }
-    }
-
-    if(show_res)
-        printf("U=%.2f\n", goal_mat.mem[0][0]);
-}
-
-int getNonIntIndex(MATRIX sf_mat, int row_index)
+int getNonIntIndex(Mat sf_mat, int row_index)
 {
     int row, col;
 
@@ -377,9 +228,9 @@ int getNonIntIndex(MATRIX sf_mat, int row_index)
     }
 
     for(row = (int)row_index ; row < sf_mat.row ; row++){
-        if( !isInt(sf_mat.mem[row][0]) ){
+        if( !isInt(sf_mat.mat[row][0]) ){
             for(col = 1 ; col < sf_mat.col ; col++){
-                if( !isInt(sf_mat.mem[row][col]) )
+                if( !isInt(sf_mat.mat[row][col]) )
                     return row;	/* find a basic var which has non-interger bi and xi */
             }
         }
@@ -389,61 +240,48 @@ int getNonIntIndex(MATRIX sf_mat, int row_index)
 }
 
 /* add gomory constraint to calculate interger solution */
-void addGomoryConstraint(MATRIX* s_mat,  int row_index)
+void addGomoryConstraint(Mat &s_mat,  int row_index)
 {
     static int cons_cnt = 1;
-    float* gomory_cons;
-    int col;
-
-    gomory_cons = (float*)malloc(s_mat->col * sizeof(float));
-
-    /* extract basic var fractional part, with b>=0 */
-    gomory_cons[0] = -(s_mat->mem[row_index][0] - (int)s_mat->mem[row_index][0]);
-
-    /* extract non-basic var fractional part */
-    for(col = 1 ; col < s_mat->col ; col++){
-        if( eq(s_mat->mem[row_index][col], 0.0f) || isInt(s_mat->mem[row_index][col]) ){
-            /* no fraction part */
-            gomory_cons[col] = 0.0f;
+    vector<float> gomory_cons;
+    gomory_cons.push_back(-(s_mat.mat[row_index][0] - (int)s_mat.mat[row_index][0]));
+    for (int c = 1; c < s_mat.col; c++) {
+        if (eq(s_mat.mat[row_index][c], 0.0) || isInt(s_mat.mat[row_index][c])) {
+            gomory_cons.push_back(0.0);
             continue;
         }
-        gomory_cons[col] = -(s_mat->mem[row_index][col] - (float)ceil(s_mat->mem[row_index][col]));
+        gomory_cons.push_back(-(s_mat.mat[row_index][c] - (float)ceil(s_mat.mat[row_index][c])));
     }
-
+    assert(gomory_cons.size() == s_mat.col);
     /* add gomory constraint */
-    matrix_expand_row(s_mat, 1, gomory_cons);
-
-    if(using_name)
-        sprintf(VarName[s_mat->row-1+BVarOff], "g%d", cons_cnt++);
-    VarName_Map[s_mat->row-1+BVarOff] = s_mat->row-1+BVarOff;
-
-    free(gomory_cons);
+    mat_expand_row(s_mat, 1, gomory_cons);
+    VarName_Map[s_mat.row-1+BVarOff] = s_mat.row-1+BVarOff;
 }
 
 /* remove z column */
-int removeZ(MATRIX* s_mat)
+int removeZ(Mat &s_mat)
 {
     int z_col = -1;
     if(!expand_flag)
         return -1;
 
-    for(z_col = 0 ; z_col < s_mat->col ; z_col++){
-        if(VarName_Map[z_col] == s_mat->col-1){
+    for(z_col = 0 ; z_col < s_mat.col ; z_col++){
+        if(VarName_Map[z_col] == s_mat.col-1){
             break;
         }
     }
 
     if(z_col >= 0){
-        matrix_remove_column(s_mat, (int)z_col);
-        matrix_remove_column(&goal_mat, (int)z_col);
+        mat_remove_col(s_mat, (int)z_col);
+        mat_remove_col(goal_mat, (int)z_col);
     }
 
     return z_col;
 }
 
-u8 solveSimplex(void)
+bool solveSimplex()
 {
-    u8 res = 0;
+    bool res = 0;
     int next_nbvar;
     PIVOT pivot;
 
@@ -458,23 +296,23 @@ u8 solveSimplex(void)
             //printf("NA, findMostNegativePivot\n");
             return 0;
         }
-        reformulation(&temp_mat, pivot);
+        reformulation(temp_mat, pivot);
 
         while(1){
-            if( eq(temp_mat.mem[row_z][0], 0.0f) ){
+            if( eq(temp_mat.mat[row_z][0], 0.0f) ){
                 /* min(z)=0 */
                 int col;
-                u8 res = 0;
+                bool flag = 0;
                 for(col = 1 ; col < temp_mat.col ; col++ ){
-                    if( !eq(temp_mat.mem[row_z][col], 0.0f)){
+                    if( !eq(temp_mat.mat[row_z][col], 0.0f)){
                         pivot.bvar = row_z;
                         pivot.nbvar = col;
-                        reformulation(&temp_mat, pivot);
-                        res = 1;
+                        reformulation(temp_mat, pivot);
+                        flag = 1;
                         break;
                     }
                 }
-                if(res)
+                if(flag)
                     break;
                 else{
                     printf("some err here\n");
@@ -491,7 +329,7 @@ u8 solveSimplex(void)
                 return 0;
             }
             pivot = findPivot(temp_mat, (int)next_nbvar);
-            reformulation(&temp_mat, pivot);
+            reformulation(temp_mat, pivot);
             if(pivot.bvar == row_z){
                 //TODO: is it correct?
                 /* z becomes non-basic variable now, we can continue */
@@ -517,25 +355,25 @@ u8 solveSimplex(void)
         }else{
             next_nbvar = 1;
         }
-        reformulation(&temp_mat, pivot);
+        reformulation(temp_mat, pivot);
     }
 
     return res;
 }
 
-u8 incise(void)
+bool incise(void)
 {
     int nonIntIndex = -1;
-    u8 res;
+    bool res;
 
     while(1){
         //nonIntIndex = getNonIntIndex(temp_mat, nonIntIndex+1);
         nonIntIndex = getNonIntIndex(temp_mat, 0);
         /* Handle ILP */
         if(nonIntIndex >= 0){
-            temp_z_col = removeZ(&temp_mat);
-            addGomoryConstraint(&temp_mat, (int)nonIntIndex);
-            resetSimplexModel(&temp_mat);
+            temp_z_col = removeZ(temp_mat);
+            addGomoryConstraint(temp_mat, (int)nonIntIndex);
+            resetSimplexModel(temp_mat);
             setGoalForm(goal_mat);
 
             res = solveSimplex();
@@ -555,112 +393,66 @@ u8 incise(void)
 
 int getMaxIntValue(void)
 {
-    return toInt(goal_mat.mem[0][0]);
+    return toInt(goal_mat.mat[0][0]);
 }
 
-void getIntSolution(int* solution)
+void getIntSolution(vector<int> &solution)
 {
-    int row, col;
-
-    for(col = 1 ; col < temp_mat.col-expand_flag ; col++){
-        float sol = 0.0f;
-
-        for(row = 0 ; row < temp_mat.row ; row++){
-            if(VarName_Map[row + BVarOff] == col){
-                sol = temp_mat.mem[row][0];
+    for (int c = 1; c < temp_mat.col - expand_flag; c++) {
+        float sol = 0.0;
+        for (int r = 0; r < temp_mat.row; r++) {
+            if (VarName_Map[r + BVarOff] == c) {
+                sol = temp_mat.mat[r][0];
             }
         }
-        solution[col-1] = toInt(sol);
+        solution.push_back(toInt(sol));
     }
 }
 
-u8 initSimplexModel(MATRIX mat, MATRIX g_mat, char* var_name[])
+bool initSimplexModel(Mat mat, Mat g_mat)
 {
-    u8 res = 0;
     int i;
 
-    if(var_name == NULL)
-        using_name = 0;
-    else
-        using_name = 1;
     expand_flag = 0;
-
-    res |= create_matrix(&goal_mat, 1, mat.col);
-    /* we will do calculation on temp_mat later */
-    res |= create_matrix(&temp_mat, mat.row, mat.col);
-    copy_matrix(&temp_mat, mat);
+    copy_mat(temp_mat, mat);
 
     if(should_expand(temp_mat)){
-        float* val;
-        int i;
         expand_flag = 1;
-
-        val = (float*)malloc(temp_mat.row * sizeof(float));
-        for(i = 0 ; i < temp_mat.row ; i++)
-            val[i] = -1.0f;	/* each row add a fresh variable z, for z>=0 */
-
-        matrix_expand_column(&temp_mat, 1, val);
-        free(val);
+        vector<float> val(temp_mat.row, -1.0);
+        mat_expand_col(temp_mat, 1, val);
     }
 
-    coefbuff = (float*)malloc(mat.row*sizeof(float));
+    //coefbuff = (float*)malloc(mat.row*sizeof(float));
 
     for(i = 0 ; i < mat.col ; i++){
-        if(using_name)
-            strcpy(VarName[i], var_name[i]);
         VarName_Map[i] = i;
     }
     if(expand_flag){
-        if(using_name)
-            strcpy(VarName[mat.col], "z");
         VarName_Map[mat.col] = mat.col;
         BVarOff = mat.col + RESERVE_SPACE;
     }else{
         BVarOff = mat.col  + RESERVE_SPACE;	/* basic value offset of VarName array */
     }
     for(i = 0 ; i < mat.row ; i++){
-        if(using_name)
-            sprintf(VarName[i+BVarOff], "y%d", i+1);
         VarName_Map[i+BVarOff] = i+BVarOff;
     }
 
     setGoalForm(g_mat);
-    createSlackForm(&temp_mat);
+    createSlackForm(temp_mat);
 
-    return res;
+    return true;
 }
 
-void deleteSimplexModel(void)
-{
-    delete_matrix(&goal_mat);
-    delete_matrix(&temp_mat);
-    free(coefbuff);
-}
 
-/***************************************************************************
-Input:
-	c_mat: constraint matrix
-	g_mat: goal matrix
-	var_name: variable name
-	strategy:
-				LP:	Linear Program
-			   ILP:	Interger Linear Program
-Return:
-	0: unsatisfy	otherwise: satisfy
-***************************************************************************/
-u8 SimplexRun(STRATEGY strategy)
+bool SimplexRun()
 {
-    u8 res = 0;
+    bool res = 0;
 
     res = solveSimplex();
 
     if(res){
-        if(strategy == LP){
-            dispSolution(temp_mat, SHOW_RESULT);
-        }else{
-            res = incise();
-            dispIntSolution(temp_mat, SHOW_RESULT);
-        }
+        res = incise();
+        // dispIntSolution(temp_mat, SHOW_RESULT);
     }
 
     return res;
