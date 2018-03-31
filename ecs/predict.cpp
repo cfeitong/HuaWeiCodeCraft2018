@@ -52,16 +52,11 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         if (isok) {
             r = mid - 1;
             N = mid;
-<<<<<<< HEAD
         }
         else l = mid + 1;
     }
     if (N == -1) printf("no solution!\n");
 
-=======
-        } else l = mid + 1;
-    }
->>>>>>> a559cbb848a2e8cfd5b55d76ca0cfea8f2eb96af
     Outputor output(alloc, meta);
 
 
@@ -126,12 +121,6 @@ int flavor_mem[] = {1, 2, 4, 2, 4, 8, 4, 8, 16, 8, 16, 32, 16, 32, 64};
 
 bool distribute(vector<int> &flavor, int cpu_tol, int mem_tol, int N, vector<vector<int>> &ans) {
     assert(N < 1000);
-<<<<<<< HEAD
-=======
-    float *val = (float *) malloc((15001 * 2030) * sizeof(float));
-    //float val[(10*15 + 1) * (2*10 + 30)];
-    fill(val, val+(15001 * 2030), 0);
->>>>>>> a559cbb848a2e8cfd5b55d76ca0cfea8f2eb96af
     int interval = N * 15 + 1;
     Mat mat(2 * N + 30, N * 15 + 1);
     Mat goal_mat(1, N * 15 + 1);
@@ -150,44 +139,17 @@ bool distribute(vector<int> &flavor, int cpu_tol, int mem_tol, int N, vector<vec
         mat.mat[i + st][0] = flavor[i];
         mat.mat[i + 15 + st][0] = -flavor[i];
         for (int j = 1; j < interval; j++) {
-<<<<<<< HEAD
             if ((j-i-1)%15 == 0) {
                 mat.mat[st + i][j] = 1;
                 mat.mat[st + i + 15][j] = -1;
-=======
-            if ((j - i - 1) % 15 == 0) {
-                val[st + i * interval + j] = 1;
-                val[st + (i + 15) * interval + j] = -1;
->>>>>>> a559cbb848a2e8cfd5b55d76ca0cfea8f2eb96af
             }
         }
     }
 
-<<<<<<< HEAD
     vector<int> solution;
     initSimplexModel(mat, goal_mat);
     bool isok = SimplexRun();
     if (!isok) {
-=======
-    float *goal = (float *) malloc(15001 * sizeof(float));
-    fill(goal, goal+15001, 0);
-    int max;
-    int *solution = (int *) malloc((1500) * sizeof(int));
-    //int solution[6 * 15];
-
-    create_matrix(&mat, 2 * N + 30, interval);
-    set_matrix(&mat, val);
-
-
-    create_matrix(&goal_mat, 1, interval);
-    set_matrix(&goal_mat, goal);
-
-    initSimplexModel(mat, goal_mat, NULL);
-    //printf("yes\n");
-    u8 isok = SimplexRun(strategy);
-    if (isok == 0) {
-        printf("no solution!\n");
->>>>>>> a559cbb848a2e8cfd5b55d76ca0cfea8f2eb96af
         return false;
     }
     // int max = getMaxIntValue();
@@ -201,14 +163,6 @@ bool distribute(vector<int> &flavor, int cpu_tol, int mem_tol, int N, vector<vec
         ans.push_back(tmp);
     }
 
-<<<<<<< HEAD
-=======
-    delete_matrix(&mat);
-    delete_matrix(&goal_mat);
-    free(goal);
-    free(val);
-
->>>>>>> a559cbb848a2e8cfd5b55d76ca0cfea8f2eb96af
     return true;
 }
 
