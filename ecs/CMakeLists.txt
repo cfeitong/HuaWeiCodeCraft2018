@@ -24,4 +24,4 @@ SET(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall -std=c++11")
 aux_source_directory(. DIR_SRCS)
 
 # 指定生成目标
-add_executable(ecs ${DIR_SRCS} allocation.cpp)
+add_executable(ecs ${DIR_SRCS} allocation.cpp lib/arima.h arima.cpp)

@@ -6,6 +6,7 @@
 #include "common.h"
 #include "matrix.h"
 #include "simplex.h"
+#include "arima.h"
 
 #include <cmath>
 #include <iostream>
@@ -36,12 +37,12 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
     Allocator alloc(meta.cpu_lim, meta.mem_lim, meta.opt_type);
     vector<int> flavornum(15, 0);
     for (const auto &flavor : meta.targets) {
-        unique_ptr<LinearRegression> lr(new LinearRegression());
+        ARIMAModel arima(0, 0, 0);
         auto &s = samples[flavor];
-        lr->init(n, s);
-        lr->train(1000, 1e-4, 1e-3);
         auto pred = records.to_data(10, DAYS_PER_BLOCK, flavor);
-        double ans = lr->predict(pred);
+        arima.estimate_params(pred);
+        arima.fit(pred);
+        double ans = arima.predict(pred);
         ans *= meta.days / (1. * DAYS_PER_BLOCK);
         // get flavor id
         flavornum[get_flavor_id(flavor) - 1] = (int)ans;
