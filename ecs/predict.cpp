@@ -40,7 +40,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
     for (const auto &flavor : meta.targets) {
         unique_ptr<LinearRegression> lr(new LinearRegression());
         lr->init(meta.targets.size() * meta.block_count, samples[flavor]);
-        double loss = lr->train(4000, 1e-3, 0);
+        double loss = lr->train(4000, 1e-3, 1e-2);
         cout << "loss " << loss << endl;
         double ans = lr->predict(all_data);
         ans *= meta.days / (1. * meta.days);

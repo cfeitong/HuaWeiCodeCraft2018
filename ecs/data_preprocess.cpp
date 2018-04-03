@@ -29,7 +29,7 @@ RecordSet::RecordSet(const vector<Record> &records) {
             ed = max(ed, dt);
         }
         int ss = ed - bg + 1;
-        if (ss < 50) ss = 50;
+        if (ss < 500) ss = 500;
         vector<double> res(ss, 0);
         for (auto &r : rec) {
             int dt = ss - (ed - r.time) - 1; // put in proper place
