@@ -10,8 +10,8 @@
 using namespace std;
 
 struct Mat {
-    int row, col;
     vector<vector<float>> mat;
+    int row, col;
     Mat() {}
     Mat(int r, int c) : mat(r, vector<float>(c, 0)), row(r), col(c) {}
 };

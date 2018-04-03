@@ -5,7 +5,6 @@
 #include "evaluation.h"
 #include "matrix.h"
 #include "simplex.h"
-#include "ARIMAModel.h"
 
 #include <iostream>
 #include <memory>
@@ -15,8 +14,6 @@
 using namespace std;
 
 string join(char **data, int count);
-
-double predict(const vector<double> &dataArray);
 
 int get_flavor_id(string flavor);
 
@@ -28,17 +25,23 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
                     int data_num, char *filename) {
 
     Info meta(info);
-    int n = 3;
-    const int DAYS_PER_BLOCK = meta.days;
+    INFO = meta;
 
     RecordSet records = RecordSet(parse_records(join(data, data_num)));
-    SampleByFlavor samples = records.to_samples(n, 5);
+    vector<double> all_data;
+    map<string, vector<Sample>> samples = records.to_samples();
+    for (const auto &flavor : meta.targets) {
+        auto pred = records.to_data(flavor);
+        all_data.insert(all_data.end(), pred.end()-meta.block_count, pred.end());
+    }
     Allocator alloc(meta.cpu_lim, meta.mem_lim, meta.opt_type);
     vector<int> flavornum(15, 0);
     for (const auto &flavor : meta.targets) {
-        auto pred = records.to_data(10, DAYS_PER_BLOCK, flavor);
-        double ans = predict(pred);
-        ans *= meta.days / (1. * DAYS_PER_BLOCK);
+        unique_ptr<LinearRegression> lr(new LinearRegression());
+        lr->init(meta.targets.size() * meta.block_count, samples[flavor]);
+        lr->train(1000, 1e-3, 1e-2);
+        double ans = lr->predict(all_data);
+        ans *= meta.days / (1. * meta.days);
         flavornum[get_flavor_id(flavor) - 1] = (int) ans;
     }
     //test();
@@ -52,8 +55,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         if (isok) {
             r = mid - 1;
             N = mid;
-        }
-        else l = mid + 1;
+        } else l = mid + 1;
     }
     if (N == -1) printf("no solution!\n");
 
@@ -62,40 +64,6 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
 
     // 直接调用输出文件的方法输出到指定文件中(ps请注意格式的正确性，如果有解，第一行只有一个数据；第二行为空；第三行开始才是具体的数据，数据之间用一个空格分隔开)
     write_result(output.get_another_output(ans, meta), filename);
-}
-
-double predict(const vector<double> &dataArray) {
-    ARIMAModel *arima = new ARIMAModel(dataArray);
-    int period = 1;
-    int modelCnt = 5;
-    int cnt = 0;
-    std::vector<std::vector<int>> list;
-    std::vector<int> tmpPredict(modelCnt);
-
-    for (int k = 0; k < modelCnt; ++k) { //控制通过多少组参数进行计算最终的结果
-        std::vector<int> bestModel = arima->getARIMAModel(period, list, k != 0);
-        //std::cout<<bestModel.size()<<std::endl;
-
-        if (bestModel.empty()) {
-            tmpPredict[k] = (int) dataArray[dataArray.size() - period];
-            cnt++;
-            break;
-        } else {
-            //std::cout<<bestModel[0]<<bestModel[1]<<std::endl;
-            int predictDiff = arima->predictValue(bestModel[0], bestModel[1], period);
-            //std::cout<<"fuck"<<std::endl;
-            tmpPredict[k] = arima->aftDeal(predictDiff, period);
-            cnt++;
-        }
-        list.push_back(bestModel);
-    }
-
-    double sumPredict = 0.0;
-    for (int k = 0; k < cnt; ++k) {
-        sumPredict += ((double) tmpPredict[k]) / (double) cnt;
-    }
-    printf("predict = %.2f\n", sumPredict);
-    return sumPredict;
 }
 
 string join(char **data, int count) {
@@ -139,7 +107,7 @@ bool distribute(vector<int> &flavor, int cpu_tol, int mem_tol, int N, vector<vec
         mat.mat[i + st][0] = flavor[i];
         mat.mat[i + 15 + st][0] = -flavor[i];
         for (int j = 1; j < interval; j++) {
-            if ((j-i-1)%15 == 0) {
+            if ((j - i - 1) % 15 == 0) {
                 mat.mat[st + i][j] = 1;
                 mat.mat[st + i + 15][j] = -1;
             }

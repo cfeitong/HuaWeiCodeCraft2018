@@ -27,12 +27,15 @@ struct Info {
     int end_date;
     int cpu_lim;            // cpu per physic machine
     int mem_lim;            // memory per physic machine
+    int block_count;
     vector<string> targets; // target flavor
     string opt_type;        // CPU or MEM to optimize
 
+    int flavor_seq(const string &flavor);
     Info(char **info);
 };
 
+class Allocator;
 class Outputor {
   public:
     Outputor(Allocator &alloc, const Info &meta);
