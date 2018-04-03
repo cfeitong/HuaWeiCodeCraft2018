@@ -68,7 +68,8 @@ pdd LinearRegression::norm(Sample &sample) {
     return pdd(mn, var);
 }
 
-bool LinearRegression::train(int num_times, double lr, double reg) {
+double LinearRegression::train(int num_times, double lr, double reg) {
+    double loss = 0;
     for (auto &it : this->trainset) this->norm(it);
     for (int t = 1; t <= num_times; t++) {
         pdvd p = this->loss(reg);
@@ -76,8 +77,9 @@ bool LinearRegression::train(int num_times, double lr, double reg) {
         for (int i = 0; i < n; i++) {
             this->w[i] -= lr * p.second[i];
         }
+        loss = p.first;
     }
-    return true;
+    return loss;
 }
 
 double LinearRegression::predict(vector<double> testset) {
