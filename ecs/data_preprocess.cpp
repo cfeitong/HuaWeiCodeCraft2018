@@ -29,14 +29,17 @@ RecordSet::RecordSet(const vector<Record> &records) {
             ed = max(ed, dt);
         }
         int ss = ed - bg + 1;
-        if (ss < 500) ss = 500;
         vector<double> res(ss, 0);
         for (auto &r : rec) {
             int dt = ss - (ed - r.time) - 1; // put in proper place
             res[dt] += 1;
         }
+        while (res.size() < 50) {
+            res.insert(res.end(), res.begin(), res.end());
+        }
+        vector<double> tmp(res.end()-50, res.end());
 
-        this->data_flavor[idx] = res;
+        this->data_flavor[idx] = tmp;
     }
 }
 
