@@ -72,7 +72,7 @@ bool LinearRegression::train(int num_times, double lr, double reg) {
     for (auto &it : this->trainset) this->norm(it);
     for (int t = 1; t <= num_times; t++) {
         pdvd p = this->loss(reg);
-        cout << "loss: " << p.first << endl;
+//        cout << "loss: " << p.first << endl;
         for (int i = 0; i < n; i++) {
             this->w[i] -= lr * p.second[i];
         }
