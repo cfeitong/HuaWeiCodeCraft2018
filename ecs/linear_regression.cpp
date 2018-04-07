@@ -111,8 +111,13 @@ void LinearRegression::importance_norm(int seq, int len) {
     for (int i = seq*len; i < seq*(len+1); i++) {
         this->i[i] *= 10;
     }
-    double sum = accumulate(this->i.begin(), this->i.end(), 0.);
-    for (auto &v : this->i) {
-        v /= sum;
+    for (int i = 0; i < len; i++) {
+        double sum = 0;
+        for (int j = i; j < this->i.size(); j += len) {
+            sum += this->i[j];
+        }
+        for (int j = i; j < this->i.size(); j += len) {
+            this->i[j] /= sum;
+        }
     }
 }
