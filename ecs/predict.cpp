@@ -36,7 +36,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         auto pred = records.to_data(10, DAYS_PER_BLOCK, flavor);
 //        double ans = lr->predict(pred);
         double ans = 0;
-        for (int i = 0; i < 2; i++) ans += pred[pred.size()-1-i] / 2;
+        for (int i = 0; i < 1; i++) ans += pred[pred.size()-1-i] / 1;
         ans *= meta.days / (1. * DAYS_PER_BLOCK);
         int dd = round(ans);
         for (int i = 0; i < dd; i++) {
