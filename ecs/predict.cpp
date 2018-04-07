@@ -27,22 +27,18 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
     Info meta(info);
     meta.block_count = 4;
     INFO = meta;
+    INFO.k = 1.2;
 
     RecordSet records = RecordSet(parse_records(join(data, data_num)));
-    vector<double> all_data;
     map<string, vector<Sample>> samples = records.to_samples();
-    for (const auto &flavor : meta.targets) {
-        auto pred = records.to_data(flavor);
-        all_data.insert(all_data.end(), pred.end() - meta.block_count, pred.end());
-    }
     Allocator alloc(meta.cpu_lim, meta.mem_lim, meta.opt_type);
     vector<int> flavornum(15, 0);
     for (const auto &flavor : meta.targets) {
         unique_ptr<LinearRegression> lr(
-                new LinearRegression(meta.targets.size() * meta.block_count, samples[flavor]));
-        lr->importance_norm(meta.flavor_seq(flavor), meta.block_count);
-        double loss = lr->train(4000, 1e-3, 0);
-        double ans = lr->predict(all_data);
+                new LinearRegression(meta.block_count, samples[flavor]));
+        vector<double> data = records.to_data(flavor);
+        double loss = lr->train(4000, 1e-3, 1e-3);
+        double ans = lr->predict(data);
         ans *= meta.days / (1. * meta.days);
         flavornum[get_flavor_id(flavor) - 1] = (int) ans;
     }

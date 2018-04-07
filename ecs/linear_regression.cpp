@@ -1,7 +1,9 @@
 #include "linear_regression.h"
+#include <lib_io.h>
 #include <iostream>
 #include <random>
 #include <vector>
+#include <cmath>
 using namespace std;
 
 const double eps = 1e-6;
@@ -28,7 +30,8 @@ pdvd LinearRegression::loss(double reg) {
     for (auto it : this->trainset) {
         double score = 0;
         for (int i = 0; i < this->n; i++) {
-            score += it.X[i] * this->w[i] * this->i[i];
+            double importance = exp(-(this->n - i)*(this->n-i)/(2*INFO.k*INFO.k));
+            score += it.X[i] * this->w[i] * importance;
         }
         l += (score - it.y) * (score - it.y) / 2;
         for (int i = 0; i < n; i++) {
@@ -37,10 +40,10 @@ pdvd LinearRegression::loss(double reg) {
     }
     l = l / this->trainset.size();
     for (int i = 0; i < n; i++)
-        l += reg * this->w[i] * this->w[i] * this->i[i] * this->i[i];
+        l += reg * this->w[i] * this->w[i];
     for (int i = 0; i < n; i++) {
         grad[i] /= this->trainset.size();
-        grad[i] += 2 * reg * this->w[i] * this->i[i];
+        grad[i] += 2 * reg;
     }
     return pdvd(l, grad);
 }
@@ -74,7 +77,7 @@ double LinearRegression::train(int num_times, double lr, double reg) {
         pdvd p = this->loss(reg);
 //        cout << "loss: " << p.first << endl;
         for (int i = 0; i < n; i++) {
-            this->w[i] -= lr * p.second[i] * this->i[i];
+            this->w[i] -= lr * p.second[i];
         }
         loss = p.first;
     }
@@ -91,7 +94,7 @@ double LinearRegression::predict(vector<double> testset) {
     test = tmp.X;
     double score = 0;
     for (size_t i = test.size() - this->n; i <= test.size() - 1; i++) {
-        score += test[i] * this->w[i] * this->i[i];
+        score += test[i] * this->w[i];
     }
     if (abs(p.second) < eps) score = score + p.first;
     else score = score * p.second + p.first;
@@ -103,21 +106,3 @@ void LinearRegression::show() {
         cout << this->w[i] << endl;
 }
 
-void LinearRegression::importance_norm(int seq, int len) {
-    this->i.clear();
-    for (int i = 0; i < this->n; i++) {
-        this->i.push_back(1);
-    }
-    for (int i = seq*len; i < seq*(len+1); i++) {
-        this->i[i] *= 10;
-    }
-    for (int i = 0; i < len; i++) {
-        double sum = 0;
-        for (int j = i; j < this->i.size(); j += len) {
-            sum += this->i[j];
-        }
-        for (int j = i; j < this->i.size(); j += len) {
-            this->i[j] /= sum;
-        }
-    }
-}

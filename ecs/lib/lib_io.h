@@ -28,6 +28,7 @@ struct Info {
     int cpu_lim;            // cpu per physic machine
     int mem_lim;            // memory per physic machine
     int block_count;
+    double k;               // local weight
     vector<string> targets; // target flavor
     string opt_type;        // CPU or MEM to optimize
 
