@@ -26,7 +26,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
 
     Info meta(info);
     meta.block_count = 4;
-    meta.k = 0.25;
+    meta.k = 0.15;
     INFO = meta;
 
     RecordSet records = RecordSet(parse_records(join(data, data_num)));
@@ -41,7 +41,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
     for (const auto &flavor : meta.targets) {
         unique_ptr<LinearRegression> lr(new LinearRegression());
         lr->init(meta.targets.size() * meta.block_count, samples[flavor]);
-        double loss = lr->train(2000, 1e-3, 1e-3);
+        double loss = lr->train(4000, 1e-3, 1e-3);
 //        cout << "loss " << loss << endl;
         double ans = lr->predict(all_data);
         flavornum[get_flavor_id(flavor) - 1] = (int) ans;
