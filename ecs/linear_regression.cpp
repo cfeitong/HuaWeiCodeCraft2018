@@ -48,8 +48,8 @@ pdvd LinearRegression::loss(double reg) {
         l += reg * this->w[i] * this->w[i];
     for (int i = 0; i < n; i++) {
         grad[i] /= this->trainset.size();
-//        double importance = exp(-(c - i % c - 1) / (2 * k * k));
-        grad[i] += 2 * reg * this->w[i];
+        double importance = exp(-(c - i % c - 1) / (2 * k * k));
+        grad[i] += 2 * reg * this->w[i] * importance;
     }
     return pdvd(l, grad);
 }
