@@ -34,15 +34,15 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
     Allocator alloc(meta.cpu_lim, meta.mem_lim, meta.opt_type);
     vector<int> flavornum(15, 0);
     for (const auto &flavor : meta.targets) {
-        unique_ptr<LinearRegression> lr(
-                new LinearRegression(meta.block_count, records.to_samples(flavor)));
-        double loss = lr->train(4000, 1e-2, 1e-3);
+//        unique_ptr<LinearRegression> lr(
+//                new LinearRegression(meta.block_count, records.to_samples(flavor)));
+//        double loss = lr->train(4000, 1e-2, 1e-3);
         vector<double> data = records.to_data(flavor);
 //        double ans = lr->predict(data);
         double ans = 0; for (int i = 0; i < 4; i++) ans += data[data.size()-i-1];
         ans /= 4;
         flavornum[get_flavor_id(flavor) - 1] =  round(ans);
-        cout << flavor << " " << round(ans) << endl;
+//        cout << flavor << " " << round(ans) << endl;
     }
     //test();
     vector<vector<int>> ans;
