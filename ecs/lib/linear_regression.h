@@ -14,7 +14,7 @@ public:
     bool init(int n, vector<Sample> ts);
     pdvd loss(double reg);
     pdd norm(Sample &sample);
-    bool train(int num_times, double lr, double reg);
+    double train(int num_times, double lr, double reg);
     double predict(vector<double> testset);
     void show();
 private:
