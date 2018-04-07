@@ -4,42 +4,69 @@
 #include "constant.h"
 #include <map>
 #include <string>
-#include <vector>
-#include <algorithm>
 
 using namespace std;
 
 class Allocator {
   public:
-    Allocator(int _cpu, int _mem, const string &_type) : cpu(_cpu), mem(_mem), type(_type) {}
+    Allocator(int _cpu, int _mem) : cpu(_cpu), mem(_mem) {}
 
-    int count(int phy_id, string flavor);
+    int count(int phy_id, string flavor) {
+        return this->result[phy_id-1][flavor];
+    }
 
-    map<string, int> count(int phy_id);
+    map<string, int> count(int phy_id) {
+        return this->result[phy_id];
+    }
 
-    int count_phy() const;
+    int count_phy() const {
+        return this->result.size();
+    }
 
-    int count_vir(const string &flavor);
+    int count_vir(const string &flavor) {
+        int ret = 0;
+        for (auto &it : this->result) {
+            ret += it.second[flavor];
+        }
+        return ret;
+    }
 
-    // used for offline algorithm
-    // after adding all elements, call this->compute() is a must
-    void add_elem(const string &flavor);
+    void alloc(string flavor) {
+        int cpu_used = CPU[flavorid(flavor)];
+        int mem_used = MEM[flavorid(flavor)];
+        bool ok = false;
+        for (auto &it : this->resource) {
+            auto &c = it.second.first;
+            auto &m = it.second.second;
+            if (cpu_used <= c && mem_used <= m) {
+                c -= cpu_used;
+                m -= mem_used;
+                this->result[it.first][flavor]++;
+                ok = true;
+                break;
+            }
+        }
 
-    void reset();
+        if (!ok) {
+            this->resource[this->resource.size()] = {this->cpu, this->mem};
+            alloc(flavor);
+        }
+    }
 
-    // best fit decreasing
-    void compute();
-
-    void alloc(const string &flavor);
-
-    map<string, int> flavor_count();
+    map<string, int> flavor_count() {
+        map<string, int> ret;
+        for (const auto &phy : this->result) {
+            for (const auto &vir : phy.second) {
+                ret[vir.first] += vir.second;
+            }
+        }
+        return ret;
+    };
 
   private:
-    vector<string> elems;
     map<int, pair<int, int>> resource;
     map<int, map<string, int>> result;
     int cpu, mem;
-    string type;
 };
 
 #endif // ALLOCATION_H_

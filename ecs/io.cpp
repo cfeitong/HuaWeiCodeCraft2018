@@ -53,6 +53,7 @@ Info::Info(char **info) {
     int start = to_days(sy, sm, sd);
     int end = to_days(ey, em, ed);
     int len = end - start;
+    mem *= 1024;
 
     this->days = len;
     this->start_date = start;
@@ -88,39 +89,6 @@ Outputor::Outputor(Allocator &alloc, const Info &meta) {
         ss << "\n";
     }
     this->result = ss.str();
-}
-char *Outputor::get_another_output(vector<vector<int>> &alloc, const Info &meta) {
-    stringstream ss;
-    int N = alloc.size();
-    int total = 0;
-    for (auto &it : alloc) {
-        for (auto &i : it) {
-            total += i;
-        }
-    }
-    ss << total << "\n";
-    for (auto &it : meta.targets) {
-        int id = 0;
-        if (it.size() > 7) id = (it[6] - '0') * 10 + it[7] - '0';
-        else id = it[6] - '0';
-        int cnt = 0;
-        for (auto &i : alloc) {
-            cnt += i[id - 1];
-        }
-        ss << it << " " << cnt << "\n";
-    }
-    ss << "\n";
-    ss << N << "\n";
-    for (int i = 0; i < N; i++) {
-        ss << i + 1;
-        for (int j = 0; j < 15; j++) {
-            if (alloc[i][j] == 0) continue;
-            ss << " flavor" << j + 1 << " " << alloc[i][j];
-        }
-        ss << "\n";
-    }
-    strcpy(final_result, (ss.str()).c_str());
-    return final_result;
 }
 
 char *Outputor::get_output() {

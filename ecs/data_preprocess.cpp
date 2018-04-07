@@ -46,7 +46,7 @@ SampleByFlavor RecordSet::to_samples(int n, int days) {
         string idx = fr.first;
         vector<double> &data = fr.second;
         vector<Sample> tmp;
-        for (size_t i = 0; i < data.size() - (n + 1) * days - 1; i++) {
+        for (int i = 0; i < data.size() - (n + 1) * days - 1; i++) {
             Sample t;
             for (int j = 0; j < n; j++) {
                 double s = 0;
@@ -69,7 +69,7 @@ vector<double> RecordSet::to_data(int n, int days, string flavor) {
     vector<double> ret;
     for (int i = 0; i < n; i++) {
         double s = 0;
-        for (size_t j = vec.size() - (n - i) * days; j < vec.size() - (n - i - 1) * days; j++) s += vec[j];
+        for (int j = vec.size() - (n - i) * days; j < vec.size() - (n - i - 1) * days; j++) s += vec[j];
         ret.push_back(s);
     }
     return ret;
