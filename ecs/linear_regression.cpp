@@ -1,7 +1,10 @@
 #include "linear_regression.h"
+#include "constant.h"
+
 #include <iostream>
 #include <random>
 #include <vector>
+
 using namespace std;
 
 const double eps = 1e-6;
@@ -26,6 +29,9 @@ pdvd LinearRegression::loss(double reg) {
     for (int i = 0; i < n; i++)
         grad.push_back(0);
 
+    int n = INFO.block_count;
+    double k = INFO.k;
+
     for (auto it : this->trainset) {
         double score = 0;
         for (int i = 0; i < this->n; i++) {
@@ -33,7 +39,8 @@ pdvd LinearRegression::loss(double reg) {
         }
         l += (score - it.y) * (score - it.y) / 2;
         for (int i = 0; i < n; i++) {
-            grad[i] += (score - it.y) * it.X[i];
+            double importance = exp(-(n - i % n - 1) / (2 * k * k));
+            grad[i] += (score - it.y) * it.X[i] * importance;
         }
     }
     l = l / this->trainset.size();
@@ -41,7 +48,8 @@ pdvd LinearRegression::loss(double reg) {
         l += reg * this->w[i] * this->w[i];
     for (int i = 0; i < n; i++) {
         grad[i] /= this->trainset.size();
-        grad[i] += 2 * reg * this->w[i];
+        double importance = exp(-(n - i % n - 1) / (2 * k * k));
+        grad[i] += 2 * reg * this->w[i] * importance;
     }
     return pdvd(l, grad);
 }
@@ -52,7 +60,7 @@ pdd LinearRegression::norm(Sample &sample) {
     int N = sample.X.size();
     for (auto &i : sample.X) mn += i;
     mn = mn / N;
-    for(auto &i : sample.X) {
+    for (auto &i : sample.X) {
         var += (i - mn) * (i - mn);
     }
     var = sqrt(var / N);
@@ -61,7 +69,7 @@ pdd LinearRegression::norm(Sample &sample) {
         sample.y = sample.y - mn;
         return pdd(mn, var);
     }
-    for(auto &i : sample.X) {
+    for (auto &i : sample.X) {
         i = (i - mn) / var;
     }
     sample.y = (sample.y - mn) / var;
@@ -87,7 +95,8 @@ double LinearRegression::predict(vector<double> testset) {
     for (size_t i = testset.size() - this->n; i <= testset.size() - 1; i++)
         test.push_back(testset[i]);
     Sample tmp;
-    tmp.X = test; tmp.y = 0;
+    tmp.X = test;
+    tmp.y = 0;
     pdd p = this->norm(tmp);
     test = tmp.X;
     double score = 0;
