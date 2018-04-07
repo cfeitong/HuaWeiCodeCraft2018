@@ -29,48 +29,49 @@ RecordSet::RecordSet(const vector<Record> &records) {
             ed = max(ed, dt);
         }
         int ss = ed - bg + 1;
+        if (ss < 50) ss = 50;
         vector<double> res(ss, 0);
-        for (auto &r : rec) {
+        for(auto &r : rec) {
             int dt = ss - (ed - r.time) - 1; // put in proper place
             res[dt] += 1;
         }
-        while (res.size() < 50) {
-            res.insert(res.end(), res.begin(), res.end());
-        }
-        vector<double> tmp(res.end()-50, res.end());
 
-        this->data_flavor[idx] = tmp;
+        this->data_flavor[idx] = res;
     }
 }
 
-vector<Sample> RecordSet::to_samples(const string &flavor) {
-    vector<Sample> ret;
-    int n = INFO.block_count;
-    vector<double> data = this->to_data(flavor);
-    for (int i = 0; i < data.size() - n; i++) {
-        vector<double> in;
-        for (int j = i; j < i+n; j++) {
-            in.push_back(data[j]);
+SampleByFlavor RecordSet::to_samples(int n, int days) {
+    SampleByFlavor ret;
+    for (auto &fr : this->data_flavor) {
+        string idx = fr.first;
+        vector<double> &data = fr.second;
+        vector<Sample> tmp;
+        for (int i = 0; i < data.size() - (n + 1) * days - 1; i++) {
+            Sample t;
+            for (int j = 0; j < n; j++) {
+                double s = 0;
+                for(int k = i + j * days; k < i + j * days + days; k++) {
+                    s += data[k];
+                }
+                t.X.push_back(s);
+            }
+            t.y = 0;
+            for (int j = i + n * days; j < i + (n + 1) * days; j++) t.y += data[j];
+            tmp.push_back(t);
         }
-        ret.push_back({in, data[i+n]});
+        ret[idx] = tmp;
     }
     return ret;
 }
 
-vector<double> RecordSet::to_data(string flavor) {
-    int days = INFO.days;
+vector<double> RecordSet::to_data(int n, int days, string flavor) {
     auto &vec = this->data_flavor[flavor];
     vector<double> ret;
-    for (int i = (int) vec.size(); i >= 0; i -= days) {
+    for (int i = 0; i < n; i++) {
         double s = 0;
-        for (int j = i - 1; j >= i - days; j--) {
-            if (j >= 0) {
-                s += vec[j];
-            }
-        }
+        for (int j = vec.size() - (n - i) * days; j < vec.size() - (n - i - 1) * days; j++) s += vec[j];
         ret.push_back(s);
     }
-    reverse(ret.begin(), ret.end());
     return ret;
 }
 
@@ -84,10 +85,8 @@ Record parse_line(string line) {
     Record ret;
     ss >> ret.id;
     ss >> ret.flavor;
-    string date;
-    int y, m, d;
-    ss >> date;
-    sscanf(date.c_str(), "%d-%d-%d", &y, &m, &d);
+    string date; int y, m, d;
+    ss >> date; sscanf(date.c_str(), "%d-%d-%d", &y, &m, &d);
     ret.time = to_days(y, m, d);
     return ret;
 }
