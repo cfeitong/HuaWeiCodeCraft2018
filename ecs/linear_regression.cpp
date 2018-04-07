@@ -29,7 +29,7 @@ pdvd LinearRegression::loss(double reg) {
     for (int i = 0; i < n; i++)
         grad.push_back(0);
 
-    int n = INFO.block_count;
+    int c = INFO.block_count;
     double k = INFO.k;
 
     for (auto it : this->trainset) {
@@ -39,7 +39,7 @@ pdvd LinearRegression::loss(double reg) {
         }
         l += (score - it.y) * (score - it.y) / 2;
         for (int i = 0; i < n; i++) {
-            double importance = exp(-(n - i % n - 1) / (2 * k * k));
+            double importance = exp(-(c - i % c - 1) / (2 * k * k));
             grad[i] += (score - it.y) * it.X[i] * importance;
         }
     }
@@ -48,8 +48,8 @@ pdvd LinearRegression::loss(double reg) {
         l += reg * this->w[i] * this->w[i];
     for (int i = 0; i < n; i++) {
         grad[i] /= this->trainset.size();
-        double importance = exp(-(n - i % n - 1) / (2 * k * k));
-        grad[i] += 2 * reg * this->w[i] * importance;
+//        double importance = exp(-(c - i % c - 1) / (2 * k * k));
+        grad[i] += 2 * reg * this->w[i];
     }
     return pdvd(l, grad);
 }

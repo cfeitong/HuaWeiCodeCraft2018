@@ -26,7 +26,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
 
     Info meta(info);
     meta.block_count = 4;
-    meta.k = 0.01;
+    meta.k = 0.25;
     INFO = meta;
 
     RecordSet records = RecordSet(parse_records(join(data, data_num)));
