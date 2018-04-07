@@ -1,17 +1,17 @@
 #ifndef CONSTANT_H_
 #define CONSTANT_H_
 
+#include "lib_io.h"
+
 #include <string>
 
-int flavorid(std::string flavor);
+struct Info;
+extern Info INFO;
 
-const int CPU[20] = {
-    -1, 1, 1, 1, 2, 2, 2, 4, 4, 4, 8, 8, 8, 16, 16, 16,
-};
+int flavorid(const std::string &flavor);
 
-const int MEM[20] = {
-    -1,    1024,  2048, 4096,  2048,  4096,  8192,  4096,
-    8192, 16384, 8192, 16384, 32768, 16384, 32768, 65536,
-};
+extern const int CPU[20];
+
+extern const int MEM[20];
 
 #endif // CONSTANT_H_

@@ -6,7 +6,7 @@ using namespace std;
 
 const double eps = 1e-6;
 
-bool LinearRegression::init(int n, vector<Sample> ts) {
+LinearRegression::LinearRegression(int n, const vector<Sample> &ts) {
     this->n = n;
     this->trainset = ts;
     random_device rd;
@@ -17,7 +17,6 @@ bool LinearRegression::init(int n, vector<Sample> ts) {
         this->w.push_back(w);
     }
     this->b = distribution(generator);
-    return true;
 }
 
 pdvd LinearRegression::loss(double reg) {
@@ -29,7 +28,7 @@ pdvd LinearRegression::loss(double reg) {
     for (auto it : this->trainset) {
         double score = 0;
         for (int i = 0; i < this->n; i++) {
-            score += it.X[i] * this->w[i];
+            score += it.X[i] * this->w[i] * this->i[i];
         }
         l += (score - it.y) * (score - it.y) / 2;
         for (int i = 0; i < n; i++) {
@@ -38,10 +37,10 @@ pdvd LinearRegression::loss(double reg) {
     }
     l = l / this->trainset.size();
     for (int i = 0; i < n; i++)
-        l += reg * this->w[i] * this->w[i];
+        l += reg * this->w[i] * this->w[i] * this->i[i] * this->i[i];
     for (int i = 0; i < n; i++) {
         grad[i] /= this->trainset.size();
-        grad[i] += 2 * reg * this->w[i];
+        grad[i] += 2 * reg * this->w[i] * this->i[i];
     }
     return pdvd(l, grad);
 }
@@ -68,29 +67,31 @@ pdd LinearRegression::norm(Sample &sample) {
     return pdd(mn, var);
 }
 
-bool LinearRegression::train(int num_times, double lr, double reg) {
+double LinearRegression::train(int num_times, double lr, double reg) {
+    double loss = 0;
     for (auto &it : this->trainset) this->norm(it);
     for (int t = 1; t <= num_times; t++) {
         pdvd p = this->loss(reg);
 //        cout << "loss: " << p.first << endl;
         for (int i = 0; i < n; i++) {
-            this->w[i] -= lr * p.second[i];
+            this->w[i] -= lr * p.second[i] * this->i[i];
         }
+        loss = p.first;
     }
-    return true;
+    return loss;
 }
 
 double LinearRegression::predict(vector<double> testset) {
     vector<double> test;
-    for (int i = testset.size() - this->n; i <= testset.size() - 1; i++)
+    for (size_t i = testset.size() - this->n; i <= testset.size() - 1; i++)
         test.push_back(testset[i]);
     Sample tmp;
     tmp.X = test; tmp.y = 0;
     pdd p = this->norm(tmp);
     test = tmp.X;
     double score = 0;
-    for (int i = test.size() - this->n; i <= test.size() - 1; i++) {
-        score += test[i] * this->w[i];
+    for (size_t i = test.size() - this->n; i <= test.size() - 1; i++) {
+        score += test[i] * this->w[i] * this->i[i];
     }
     if (abs(p.second) < eps) score = score + p.first;
     else score = score * p.second + p.first;
@@ -100,4 +101,18 @@ double LinearRegression::predict(vector<double> testset) {
 void LinearRegression::show() {
     for (int i = 0; i < this->n; i++)
         cout << this->w[i] << endl;
+}
+
+void LinearRegression::importance_norm(int seq, int len) {
+    this->i.clear();
+    for (int i = 0; i < this->n; i++) {
+        this->i.push_back(1);
+    }
+    for (int i = seq*len; i < seq*(len+1); i++) {
+        this->i[i] *= 10;
+    }
+    double sum = accumulate(this->i.begin(), this->i.end(), 0);
+    for (auto &v : this->i) {
+        v /= sum;
+    }
 }
