@@ -30,7 +30,7 @@ pdvd LinearRegression::loss(double reg) {
     for (auto it : this->trainset) {
         double score = 0;
         for (int i = 0; i < this->n; i++) {
-            double importance = exp(-(this->n - i)*(this->n-i)/(2*INFO.k*INFO.k));
+            double importance = 1;//exp(-(this->n - i)*(this->n-i)/(2*INFO.k*INFO.k));
             score += it.X[i] * this->w[i] * importance;
         }
         l += (score - it.y) * (score - it.y) / 2;
@@ -75,7 +75,6 @@ double LinearRegression::train(int num_times, double lr, double reg) {
     for (auto &it : this->trainset) this->norm(it);
     for (int t = 1; t <= num_times; t++) {
         pdvd p = this->loss(reg);
-//        cout << "loss: " << p.first << endl;
         for (int i = 0; i < n; i++) {
             this->w[i] -= lr * p.second[i];
         }

@@ -10,6 +10,7 @@
 #include <memory>
 #include <sstream>
 #include <cassert>
+#include <cmath>
 
 using namespace std;
 
@@ -30,17 +31,18 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
     INFO.k = 1.2;
 
     RecordSet records = RecordSet(parse_records(join(data, data_num)));
-    map<string, vector<Sample>> samples = records.to_samples();
     Allocator alloc(meta.cpu_lim, meta.mem_lim, meta.opt_type);
     vector<int> flavornum(15, 0);
     for (const auto &flavor : meta.targets) {
         unique_ptr<LinearRegression> lr(
-                new LinearRegression(meta.block_count, samples[flavor]));
+                new LinearRegression(meta.block_count, records.to_samples(flavor)));
+        double loss = lr->train(4000, 1e-2, 1e-3);
         vector<double> data = records.to_data(flavor);
-        double loss = lr->train(4000, 1e-3, 1e-3);
-        double ans = lr->predict(data);
-        ans *= meta.days / (1. * meta.days);
-        flavornum[get_flavor_id(flavor) - 1] = (int) ans;
+//        double ans = lr->predict(data);
+        double ans = 0; for (int i = 0; i < 4; i++) ans += data[data.size()-i-1];
+        ans /= 4;
+        flavornum[get_flavor_id(flavor) - 1] =  round(ans);
+        cout << flavor << " " << round(ans) << endl;
     }
     //test();
     vector<vector<int>> ans;

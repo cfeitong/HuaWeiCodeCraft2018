@@ -30,7 +30,7 @@ class RecordSet {
     RecordSet(const RecordSet &o) = default;
     RecordSet(RecordSet &&o) = default;
 
-    map<string, vector<Sample>> to_samples();
+    vector<Sample> to_samples(const string &flavor);
     vector<double> to_data(string flavor);
     vector<Record> at_date(int day);
 

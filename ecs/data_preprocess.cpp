@@ -43,25 +43,16 @@ RecordSet::RecordSet(const vector<Record> &records) {
     }
 }
 
-map<string, vector<Sample>> RecordSet::to_samples() {
-    map<string, vector<Sample>> ret;
+vector<Sample> RecordSet::to_samples(const string &flavor) {
+    vector<Sample> ret;
     int n = INFO.block_count;
-    for (auto &f : INFO.targets) {
-        vector<Sample> samples;
-        const auto &tar = this->to_data(f);
-        int len = (int)tar.size();
-        for (int i = 0; i < len - n; i++) {
-            Sample sample;
-            for (auto &fr : INFO.targets) {
-                const auto &vec = this->to_data(fr);
-                for (int block = 0; block < n; block++) {
-                    sample.X.push_back(vec[i + block]);
-                    sample.y = tar[i + n];
-                }
-            }
-            samples.push_back(sample);
+    vector<double> data = this->to_data(flavor);
+    for (int i = 0; i < data.size() - n; i++) {
+        vector<double> in;
+        for (int j = i; j < i+n; j++) {
+            in.push_back(data[j]);
         }
-        ret[f] = samples;
+        ret.push_back({in, data[i+n]});
     }
     return ret;
 }
