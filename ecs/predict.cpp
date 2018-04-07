@@ -34,9 +34,11 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         lr->init(n, s);
         lr->train(1000, 1e-4, 1e-3);
         auto pred = records.to_data(10, DAYS_PER_BLOCK, flavor);
-        double ans = lr->predict(pred);
+//        double ans = lr->predict(pred);
+        double ans = 0;
+        for (int i = 0; i < 4; i++) ans += pred[pred.size()-1-i] / 4;
         ans *= meta.days / (1. * DAYS_PER_BLOCK);
-        int dd = ceil(ans);
+        int dd = round(ans);
         for (int i = 0; i < dd; i++) {
             alloc.alloc(flavor);
         }
