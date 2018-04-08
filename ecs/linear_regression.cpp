@@ -9,7 +9,7 @@ using namespace std;
 
 const double eps = 1e-6;
 
-bool LinearRegression::init(int n, vector<Sample> ts) {
+bool LinearRegression::init(int n, const vector<Sample> &ts) {
     this->n = n;
     this->trainset = ts;
     random_device rd;
@@ -90,7 +90,7 @@ double LinearRegression::train(int num_times, double lr, double reg) {
     return loss;
 }
 
-double LinearRegression::predict(vector<double> testset) {
+double LinearRegression::predict(const vector<double> &testset) {
     vector<double> test;
     for (size_t i = testset.size() - this->n; i <= testset.size() - 1; i++)
         test.push_back(testset[i]);
