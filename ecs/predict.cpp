@@ -57,14 +57,14 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         ofstream trainout(input);
         ofstream testout(output);
         for (auto sample : samples[flavor]) {
-            norm(sample);
+            //norm(sample);
             trainout << sample.y;
             for (int i = 0; i < sample.X.size(); i++) trainout << " " << i + 1 << ":" << sample.X[i];
             trainout << endl;
         }
         trainout.close();
         auto pred = records.to_data(flavor);
-        Sample tmp; tmp.X = pred; norm(tmp); pred = tmp.X;
+        //Sample tmp; tmp.X = pred; norm(tmp); pred = tmp.X;
         testout << 1;
         for (int i = 0; i < pred.size(); i++) testout << " " << i + 1 << ":" << pred[i];
         testout << endl;
