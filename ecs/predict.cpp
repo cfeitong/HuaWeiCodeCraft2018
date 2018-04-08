@@ -25,7 +25,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
                     int data_num, char *filename) {
 
     Info meta(info);
-    meta.block_count = 4;
+    meta.block_count = 3;
     meta.k = 0.15;
     INFO = meta;
 
