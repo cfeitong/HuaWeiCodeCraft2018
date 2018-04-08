@@ -44,7 +44,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         double loss = lr->train(4000, 1e-3, 1e-3);
 //        cout << "loss " << loss << endl;
         double ans = lr->predict(all_data);
-        flavornum[get_flavor_id(flavor) - 1] = (int) ans;
+        flavornum[get_flavor_id(flavor) - 1] = max((int) ans, 0);
     }
     //test();
     vector<vector<int>> ans;

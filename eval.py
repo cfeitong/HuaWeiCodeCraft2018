@@ -45,14 +45,14 @@ def main():
         datacase = "data/test/Datacase{}.txt".format(i)
         inputcase = "data/test/input{}.txt".format(i)
         testcase = "data/test/Testcase{}.txt".format(i)
-        sp.run(["./ecs/bin/ecs", datacase, inputcase, "out.txt", "2&> /dev/null"])
+        sp.run(["./ecs/bin/ecs", datacase, inputcase, "out.txt"])
 
         res, phy = parse_output("out.txt")
         cpu_lim, mem_lim = parse_input(inputcase)
         vir = parse_test(testcase)
         acc = scoring1(res, vir)
         cpu_score, mem_score = scoring2(phy, cpu_lim, mem_lim)
-        print("acc: {:.3f}, cpu: {:.3f}, mem: {:.3f}".format(acc, cpu_score, mem_score))
+        print("case: {:2} acc: {:.3f}, cpu: {:.3f}, mem: {:.3f}".format(i, acc, cpu_score, mem_score))
 
 
 def scoring2(phy, cpu_lim, mem_lim):
