@@ -9,6 +9,7 @@
 
 #include <iostream>
 #include <memory>
+#include <fstream>
 #include <sstream>
 #include <cassert>
 
@@ -39,6 +40,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
     }
     Allocator alloc(meta.cpu_lim, meta.mem_lim, meta.opt_type);
     vector<int> flavornum(15, 0);
+    /*
     for (const auto &flavor : meta.targets) {
         unique_ptr<LinearRegression> lr(new LinearRegression());
         lr->init(meta.targets.size() * meta.block_count, samples[flavor]);
@@ -46,19 +48,35 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
 //        cout << "loss " << loss << endl;
         double ans = lr->predict(all_data);
         flavornum[get_flavor_id(flavor) - 1] = max((int) ans, 0);
-    }
+    }*/
     // use SVM to predict
-    /*
     for (const auto &flavor : meta.targets) {
         // create train and test file
-        ofstream trainout("flavor1train.txt"), testout("flavor1test.txt");
-        for (auto &sample : samples[flavor]) {
-            trainout << sample.y
+        string input = flavor+"train.txt";
+        string output = flavor+"test.txt";
+        ofstream trainout(input);
+        ofstream testout(output);
+        for (auto sample : samples[flavor]) {
+            norm(sample);
+            trainout << sample.y;
+            for (int i = 0; i < sample.X.size(); i++) trainout << " " << i + 1 << ":" << sample.X[i];
+            trainout << endl;
         }
-    }*/
-
+        trainout.close();
+        auto pred = records.to_data(flavor);
+        Sample tmp; tmp.X = pred; norm(tmp); pred = tmp.X;
+        testout << 1;
+        for (int i = 0; i < pred.size(); i++) testout << " " << i + 1 << ":" << pred[i];
+        testout << endl;
+        testout.close();
+        double ans = svm_train_predict(input, output);
+        flavornum[get_flavor_id(flavor) - 1] = max((int) ans, 0);
+    }
+    cout << "---------------------" << endl;
+    for (int i = 0; i < 15; i++) cout <<flavornum[i] << " ";
+    cout << endl;
+    cout << "---------------------" << endl;
     // Allocate
-    /*
     vector<vector<int>> ans;
     int l = 0, r = 200, N = -1;
     // use binary search to get answer
@@ -71,13 +89,13 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
             N = mid;
         } else l = mid + 1;
     }
-    if (N == -1) printf("no solution!\n");*/
+    if (N == -1) printf("no solution!\n");
 
     Outputor output(alloc, meta);
 
 
     // 直接调用输出文件的方法输出到指定文件中(ps请注意格式的正确性，如果有解，第一行只有一个数据；第二行为空；第三行开始才是具体的数据，数据之间用一个空格分隔开)
-    write_result(output.get_output(), filename);
+    write_result(output.get_another_output(ans, meta), filename);
 }
 
 string join(char **data, int count) {

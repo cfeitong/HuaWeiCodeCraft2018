@@ -180,7 +180,6 @@ void parse_command_line()
 	cross_validation = 0;
 
 	svm_set_print_string_function(print_func);
-
 	// determine filenames
 }
 
