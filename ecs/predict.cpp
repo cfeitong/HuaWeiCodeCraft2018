@@ -10,6 +10,8 @@
 #include <memory>
 #include <sstream>
 #include <cassert>
+#include <cmath>
+#include <algorithm>
 
 using namespace std;
 
@@ -44,28 +46,31 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         double loss = lr->train(4000, 1e-3, 1e-3);
 //        cout << "loss " << loss << endl;
         double ans = lr->predict(all_data);
-        flavornum[get_flavor_id(flavor) - 1] = max((int) ans, 0);
+        for (int i = 0; i < max(round(ans)+0.1, 0.); i++) alloc.alloc(flavor);
+//        flavornum[get_flavor_id(flavor) - 1] = max((int) ans, 0);
     }
+    cout << "here" << endl;
     //test();
-    vector<vector<int>> ans;
-    int l = 0, r = 200, N = -1;
-    // use binary search to get answer
-    while (l <= r) {
-        int mid = (l + r) / 2;
-        bool isok = distribute(flavornum, meta.cpu_lim, meta.mem_lim, mid, ans);
-        //cout << "yes" << endl;
-        if (isok) {
-            r = mid - 1;
-            N = mid;
-        } else l = mid + 1;
-    }
-    if (N == -1) printf("no solution!\n");
+//    vector<vector<int>> ans;
+//    int l = 0, r = 200, N = -1;
+//    // use binary search to get answer
+//    while (l <= r) {
+//        int mid = (l + r) / 2;
+//        bool isok = distribute(flavornum, meta.cpu_lim, meta.mem_lim, mid, ans);
+//        //cout << "yes" << endl;
+//        if (isok) {
+//            r = mid - 1;
+//            N = mid;
+//        } else l = mid + 1;
+//    }
+//    if (N == -1) printf("no solution!\n");
 
     Outputor output(alloc, meta);
 
 
     // 直接调用输出文件的方法输出到指定文件中(ps请注意格式的正确性，如果有解，第一行只有一个数据；第二行为空；第三行开始才是具体的数据，数据之间用一个空格分隔开)
-    write_result(output.get_another_output(ans, meta), filename);
+//    write_result(output.get_another_output(ans, meta), filename);
+    write_result(output.get_output(), filename);
 }
 
 string join(char **data, int count) {

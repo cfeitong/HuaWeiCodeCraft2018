@@ -4,6 +4,8 @@
 
 #include "allocation.h"
 #include <iostream>
+#include <algorithm>
+#include <cmath>
 
 int Allocator::count(int phy_id, string flavor) {
     return this->result[phy_id-1][flavor];
@@ -67,54 +69,35 @@ void Allocator::compute() {
                  return a.first > b.first;
              }
          });
-    vector<pair<int, int>> bins(this->elems.size(), {0, 0});
-    int lim1 = 0, lim2 = 0;
-    if (this->type == "CPU") {
-        lim1 = this->cpu;
-        lim2 = this->mem;
-    } else if (this->type == "MEM") {
-        lim1 = this->mem;
-        lim2 = this->cpu;
-    }
-    int res = 0;
-    for (const string &elem : elems) {
-        int id = flavorid(elem);
-        int c1 = 0, c2 = 0;
-        if (this->type == "CPU") {
-            c1 = CPU[id];
-            c2 = MEM[id];
-        } else if (this->type == "MEM") {
-            c1 = MEM[id];
-            c2 = CPU[id];
+    double T = 100;
+    double min_T = 1;
+    double rate = 0.9999;
+    double min_score = 100;
+    map<int, pair<int, int>> best_resource;
+    map<int, map<string, int>> best_result;
+    vector<string> best_elems = this->elems;
+    vector<int> idx;
+    for (int i = 0; i < this->elems.size(); i++) idx.push_back(i);
+    while (T > min_T) {
+        auto cur_elems = best_elems;
+        random_shuffle(idx.begin(), idx.end());
+        swap(cur_elems[idx[0]], cur_elems[idx[1]]);
+        double score = 0;
+        if (score < min_score || exp((min_score - score) / T) > rand() / RAND_MAX) {
+            min_score = score;
+            this->result = best_result;
+            this->resource = best_resource;
         }
-        int m1 = 0x3f3f3f3f;
-        int m2 = 0x3f3f3f3f;
-        int idx = -1;
-        for (int i = 0; i < res; i++) {
-            if (bins[i].first + c1 <= lim1 && bins[i].second + c2 <= lim2) {
-                if (lim1 - bins[i].first - c1 == m1) {
-                    if (lim2 - bins[i].second - c2 < m2) {
-                        idx = i;
-                        m2 = lim2 - bins[i].second - c2;
-                    }
-                } else if (lim1 - bins[i].first - c1 < m1) {
-                    idx = i;
-                    m1 = lim1 - bins[i].first - c1;
-                    m2 = min(m2, lim2 - bins[i].second - c2);
-                }
-            }
-        }
-        if (idx == -1) idx = res++;
-        this->result[idx][elem]++;
-        bins[idx].first += c1;
-        bins[idx].second += c2;
+        T *= rate;
     }
+
 }
 
 void Allocator::alloc(const string &flavor) {
     int id = flavorid(flavor);
     int cpu_used = CPU[id];
     int mem_used = MEM[id];
+    if (cpu_used > this->cpu || mem_used > this->mem) return;
     bool ok = false;
     for (auto &it : this->resource) {
         auto &c = it.second.first;
@@ -130,7 +113,7 @@ void Allocator::alloc(const string &flavor) {
 
     if (!ok) {
         this->resource[this->resource.size()] = {this->cpu, this->mem};
-        alloc(flavor);
+        this->alloc(flavor);
     }
 }
 
