@@ -106,9 +106,7 @@ bool Allocator::compute() {
                 }
             }
             if (!ok) {
-                pair<int, int> p;
-                p.first += cpu_req;
-                p.second += mem_req;
+                pair<int, int> p {cpu_req, mem_req};
                 cur_resource[cur_resource.size()] = p;
                 cur_result[cur_result.size()][flavor]++;
             }
