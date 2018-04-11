@@ -28,8 +28,8 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
                     int data_num, char *filename) {
 
     Info meta(info);
-    meta.block_count = 3;
-    meta.k = 0.15;
+    meta.block_count = 2;
+    meta.k = 1.5;
     INFO = meta;
 
     RecordSet records = RecordSet(parse_records(join(data, data_num)));
@@ -40,12 +40,12 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         all_data.insert(all_data.end(), pred.end()-meta.block_count, pred.end());
     }
     Allocator alloc(meta.cpu_lim, meta.mem_lim, meta.opt_type);
-    vector<int> flavornum(15, 0);
     for (const auto &flavor : meta.targets) {
         unique_ptr<LinearRegression> lr(new LinearRegression());
         lr->init(meta.targets.size() * meta.block_count, samples[flavor]);
-        double loss = lr->train(4000, 1e-3, 1e-3);
+        double loss = lr->train(2000, 1e-3, 1e-3);
         double ans = lr->predict(all_data);
+//        cout << flavor << " " << ans << endl;
         for (int i = 0; i < max(round(ans)+0.1, 0.); i++) alloc.add_elem(flavor);
     }
     alloc.compute();
@@ -53,7 +53,6 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
 
 
     // 直接调用输出文件的方法输出到指定文件中(ps请注意格式的正确性，如果有解，第一行只有一个数据；第二行为空；第三行开始才是具体的数据，数据之间用一个空格分隔开)
-//    write_result(output.get_another_output(ans, meta), filename);
     write_result(output.get_output(), filename);
 }
 
