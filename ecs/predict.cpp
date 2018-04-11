@@ -5,6 +5,7 @@
 #include "evaluation.h"
 #include "matrix.h"
 #include "simplex.h"
+#include "kalman.h"
 
 #include "borrow.h"
 
@@ -39,17 +40,21 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
     map<string, vector<Sample>> samples = records.to_samples();
     for (const auto &flavor : meta.targets) {
         auto pred = records.to_data(flavor);
-        all_data.insert(all_data.end(), pred.end()-meta.block_count, pred.end());
+        all_data.insert(all_data.end(), pred.end() - meta.block_count, pred.end());
     }
     Allocator alloc(meta.cpu_lim, meta.mem_lim, meta.opt_type);
     unordered_map<string, int> map_predict_num_flavors;
     for (const auto &flavor : meta.targets) {
-        unique_ptr<LinearRegression> lr(new LinearRegression());
-        lr->init(meta.targets.size() * meta.block_count, samples[flavor]);
-        double loss = lr->train(2000, 1e-3, 1e-3);
-        double ans = lr->predict(all_data);
-//        for (int i = 0; i < max(round(ans)+0.1, 0.); i++) alloc.add_elem(flavor);
-        map_predict_num_flavors[flavor] = max(round(ans)+0.1, 0.);
+//        unique_ptr<LinearRegression> lr(new LinearRegression());
+//        lr->init(meta.targets.size() * meta.block_count, samples[flavor]);
+//        double loss = lr->train(2000, 1e-3, 1e-3);
+//        double ans = lr->predict(all_data);
+
+        // use kalman filter to predict
+        double ans = KalmanPred(records.get_data(flavor), meta.days);
+//        cout << flavor << " " << ans << endl;
+        for (int i = 0; i < max(round(ans) + 0.1, 0.); i++) alloc.add_elem(flavor);
+        map_predict_num_flavors[flavor] += max(round(ans) + 0.1, 0.);
     }
 
     //各种虚拟机参数
@@ -63,7 +68,8 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
     int server_mem = INFO.mem_lim;
     bool CPUorMEM = (INFO.opt_type == "CPU");
     //调用模拟退火算法找到最优放置方法
-    vector<Server> servers = put_flavors_to_servers(map_predict_num_flavors, map_flavor_cpu_mem, server_mem, server_cpu, CPUorMEM);
+    vector<Server> servers = put_flavors_to_servers(map_predict_num_flavors, map_flavor_cpu_mem, server_mem,
+                                                    server_cpu, CPUorMEM);
 //    alloc.compute();
     alloc.reset();
     int id = 0;
