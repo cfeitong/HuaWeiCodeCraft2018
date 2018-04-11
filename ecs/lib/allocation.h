@@ -13,7 +13,7 @@ class Allocator {
   public:
     Allocator(int _cpu, int _mem, const string &_type) : cpu(_cpu), mem(_mem), type(_type) {}
 
-    int count(int phy_id, string flavor);
+    int count(int phy_id, const string &flavor);
 
     map<string, int> count(int phy_id);
 
@@ -28,7 +28,7 @@ class Allocator {
     void reset();
 
     // best fit decreasing
-    void compute();
+    bool compute();
 
     void alloc(const string &flavor);
 

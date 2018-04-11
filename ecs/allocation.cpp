@@ -7,8 +7,11 @@
 #include <algorithm>
 #include <cmath>
 
-int Allocator::count(int phy_id, string flavor) {
-    return this->result[phy_id-1][flavor];
+int Allocator::count(int phy_id, const string &flavor) {
+    int id = phy_id;
+    if (this->result.find(id) == this->result.end()) return 0;
+    auto &t = this->result[id];
+    return t[flavor];
 }
 
 map<string, int> Allocator::count(int phy_id) {
@@ -46,7 +49,8 @@ void print_vector(const vector<T> &v) {
 }
 
 // best fit decreasing
-void Allocator::compute() {
+bool Allocator::compute() {
+    if (this->elems.empty()) return true;
     sort(this->elems.begin(), this->elems.end(),
          [&](const string &fa, const string &fb) {
              int aid = flavorid(fa);
@@ -73,24 +77,71 @@ void Allocator::compute() {
     double min_T = 1;
     double rate = 0.9999;
     double min_score = 100;
-    map<int, pair<int, int>> best_resource;
-    map<int, map<string, int>> best_result;
     vector<string> best_elems = this->elems;
     vector<int> idx;
     for (int i = 0; i < this->elems.size(); i++) idx.push_back(i);
+    idx.push_back(0); // to avoid out of index error when only on element
     while (T > min_T) {
+        map<int, pair<int, int>> cur_resource;
+        map<int, map<string, int>> cur_result;
         auto cur_elems = best_elems;
         random_shuffle(idx.begin(), idx.end());
         swap(cur_elems[idx[0]], cur_elems[idx[1]]);
-        double score = 0;
+        for (const string &flavor : cur_elems) {
+            bool ok = false;
+            int cpu_req = CPU[flavorid(flavor)];
+            int mem_req = MEM[flavorid(flavor)];
+            if (cpu_req > INFO.cpu_lim || mem_req > INFO.mem_lim) {
+                return false;
+            }
+            for (auto &phy : cur_resource) {
+                int phy_id = phy.first;
+                if (this->type == "CPU") {
+                    int &cpu_used = phy.second.first;
+                    int &mem_used = phy.second.second;
+                    if (cpu_req + cpu_used <= INFO.cpu_lim && mem_req + cpu_used <= INFO.mem_lim) {
+                        cpu_used += cpu_req;
+                        mem_used += mem_req;
+                        cur_result[phy_id][flavor]++;
+                        ok = true;
+                    }
+                } else if (this->type == "MEM") {
+                    int &mem_used = phy.second.first;
+                    int &cpu_used = phy.second.second;
+                    if (cpu_req + cpu_used <= INFO.cpu_lim && mem_req + cpu_used <= INFO.mem_lim) {
+                        cpu_used += cpu_req;
+                        mem_used += mem_req;
+                        cur_result[phy_id][flavor]++;
+                        ok = true;
+                    }
+                }
+            }
+            if (!ok) {
+                pair<int, int> p;
+                if (this->type == "CPU") {
+                    p.first += cpu_req;
+                    p.second += mem_req;
+                } else if (this->type == "MEM") {
+                    p.first += mem_req;
+                    p.second += cpu_req;
+                }
+                cur_resource[cur_resource.size()] = p;
+                cur_result[cur_resource.size()][flavor]++;
+            }
+        }
+        const auto p = cur_resource.crbegin();
+        double used = p->second.first;
+        double use_rate = used / (this->type == "CPU" ? INFO.cpu_lim : INFO.mem_lim);
+        double score = cur_resource.size() - 1 + use_rate;
         if (score < min_score || exp((min_score - score) / T) > rand() / RAND_MAX) {
             min_score = score;
-            this->result = best_result;
-            this->resource = best_resource;
+            this->result = cur_result;
+            this->resource = cur_resource;
+            best_elems = cur_elems;
         }
         T *= rate;
     }
-
+    return true;
 }
 
 void Allocator::alloc(const string &flavor) {
