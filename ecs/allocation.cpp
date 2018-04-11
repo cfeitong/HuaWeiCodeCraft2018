@@ -126,7 +126,7 @@ bool Allocator::compute() {
                     p.second += cpu_req;
                 }
                 cur_resource[cur_resource.size()] = p;
-                cur_result[cur_resource.size()][flavor]++;
+                cur_result[cur_result.size()][flavor]++;
             }
         }
         const auto p = cur_resource.crbegin();
