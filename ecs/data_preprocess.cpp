@@ -34,12 +34,12 @@ RecordSet::RecordSet(const vector<Record> &records) {
             int dt = ss - (ed - r.time) - 1; // put in proper place
             res[dt] += 1;
         }
-        while (res.size() < 50) {
-            res.insert(res.end(), res.begin(), res.end());
-        }
+        //while (res.size() < 50) {
+        //    res.insert(res.end(), res.begin(), res.end());
+        //}
         vector<double> tmp(res.end()-50, res.end());
 
-        this->data_flavor[idx] = tmp;
+        this->data_flavor[idx] = res;
     }
 }
 
