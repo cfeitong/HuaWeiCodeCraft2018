@@ -50,7 +50,7 @@ void print_vector(const vector<T> &v) {
 
 // best fit decreasing
 bool Allocator::compute() {
-    if (this->elems.empty()) return true;
+    if (this->elems.empty()) return false;
     sort(this->elems.begin(), this->elems.end(),
          [&](const string &fa, const string &fb) {
              int aid = flavorid(fa);
@@ -99,7 +99,7 @@ bool Allocator::compute() {
                 if (this->type == "CPU") {
                     int &cpu_used = phy.second.first;
                     int &mem_used = phy.second.second;
-                    if (cpu_req + cpu_used <= INFO.cpu_lim && mem_req + cpu_used <= INFO.mem_lim) {
+                    if (cpu_req + cpu_used <= INFO.cpu_lim && mem_req + mem_used <= INFO.mem_lim) {
                         cpu_used += cpu_req;
                         mem_used += mem_req;
                         cur_result[phy_id][flavor]++;
@@ -108,7 +108,7 @@ bool Allocator::compute() {
                 } else if (this->type == "MEM") {
                     int &mem_used = phy.second.first;
                     int &cpu_used = phy.second.second;
-                    if (cpu_req + cpu_used <= INFO.cpu_lim && mem_req + cpu_used <= INFO.mem_lim) {
+                    if (cpu_req + cpu_used <= INFO.cpu_lim && mem_req + mem_used <= INFO.mem_lim) {
                         cpu_used += cpu_req;
                         mem_used += mem_req;
                         cur_result[phy_id][flavor]++;
