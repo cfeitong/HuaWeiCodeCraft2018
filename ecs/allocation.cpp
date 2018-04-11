@@ -92,7 +92,7 @@ bool Allocator::compute() {
             int cpu_req = CPU[flavorid(flavor)];
             int mem_req = MEM[flavorid(flavor)];
             if (cpu_req > INFO.cpu_lim || mem_req > INFO.mem_lim) {
-                return false;
+                continue;
             }
             for (auto &phy : cur_resource) {
                 int phy_id = phy.first;
