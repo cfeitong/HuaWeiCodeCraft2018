@@ -57,6 +57,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         double ans = 0;
         for (auto &i : dt) ans += i;
         ans /= dt.size();
+        ans *= meta.days;
         
 //        cout << flavor << " " << ans << endl;
         for (int i = 0; i < max(round(ans) + 0.1, 0.); i++) alloc.add_elem(flavor);
