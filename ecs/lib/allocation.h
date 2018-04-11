@@ -34,7 +34,7 @@ class Allocator {
 
     map<string, int> flavor_count();
 
-  private:
+//  private:
     vector<string> elems;
     map<int, pair<int, int>> resource;
     map<int, map<string, int>> result;
