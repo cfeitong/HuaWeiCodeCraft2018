@@ -73,9 +73,9 @@ bool Allocator::compute() {
                  return a.first > b.first;
              }
          });
-    double T = 2;
+    double T = 100;
     double min_T = 1;
-    double rate = 0.9;
+    double rate = 0.9999;
     double min_score = 100;
     vector<string> best_elems = this->elems;
     vector<int> idx;
