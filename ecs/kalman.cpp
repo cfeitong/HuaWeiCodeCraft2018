@@ -6,7 +6,7 @@ using namespace std;
 double KalmanPred(vector<double> flavor, int days) {
 	KalmanInfo *info = new KalmanInfo();
 	// initial noise to zeros
-	Init_KalmanInfo(info, 10, 10);
+	Init_KalmanInfo(info, 1, 15);
 	for (auto &i : flavor) {
 		auto a = KalmanFilter(info, i);
 		//cout << "kalman out: " << a << endl;
