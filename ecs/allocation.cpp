@@ -96,42 +96,30 @@ bool Allocator::compute() {
             }
             for (auto &phy : cur_resource) {
                 int phy_id = phy.first;
-                if (this->type == "CPU") {
-                    int &cpu_used = phy.second.first;
-                    int &mem_used = phy.second.second;
-                    if (cpu_req + cpu_used <= INFO.cpu_lim && mem_req + mem_used <= INFO.mem_lim) {
-                        cpu_used += cpu_req;
-                        mem_used += mem_req;
-                        cur_result[phy_id][flavor]++;
-                        ok = true;
-                    }
-                } else if (this->type == "MEM") {
-                    int &mem_used = phy.second.first;
-                    int &cpu_used = phy.second.second;
-                    if (cpu_req + cpu_used <= INFO.cpu_lim && mem_req + mem_used <= INFO.mem_lim) {
-                        cpu_used += cpu_req;
-                        mem_used += mem_req;
-                        cur_result[phy_id][flavor]++;
-                        ok = true;
-                    }
+                int &cpu_used = phy.second.first;
+                int &mem_used = phy.second.second;
+                if (cpu_req + cpu_used <= INFO.cpu_lim && mem_req + mem_used <= INFO.mem_lim) {
+                    cpu_used += cpu_req;
+                    mem_used += mem_req;
+                    cur_result[phy_id][flavor]++;
+                    ok = true;
                 }
             }
             if (!ok) {
                 pair<int, int> p;
-                if (this->type == "CPU") {
-                    p.first += cpu_req;
-                    p.second += mem_req;
-                } else if (this->type == "MEM") {
-                    p.first += mem_req;
-                    p.second += cpu_req;
-                }
+                p.first += cpu_req;
+                p.second += mem_req;
                 cur_resource[cur_resource.size()] = p;
                 cur_result[cur_result.size()][flavor]++;
             }
         }
         const auto p = cur_resource.crbegin();
-        double used = p->second.first;
-        double use_rate = used / (this->type == "CPU" ? INFO.cpu_lim : INFO.mem_lim);
+        double use_rate = 0;
+        if (this->type == "CPU") {
+            use_rate = p->second.first * 1. / INFO.cpu_lim;
+        } else if (this->type == "MEM") {
+            use_rate = p->second.second * 1. / INFO.mem_lim;
+        }
         double score = cur_resource.size() - 1 + use_rate;
         if (score < min_score || exp((min_score - score) / T) > rand() / RAND_MAX) {
             min_score = score;
