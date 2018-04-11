@@ -28,7 +28,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
                     int data_num, char *filename) {
 
     Info meta(info);
-    meta.block_count = 3;
+    meta.block_count = 4;
     meta.k = 0.15;
     INFO = meta;
 
@@ -46,7 +46,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         double loss = lr->train(2000, 1e-3, 1e-3);
         double ans = lr->predict(all_data);
 //        cout << flavor << " " << ans << endl;
-        for (int i = 0; i < max(round(ans)+0.1, 1.); i++) alloc.add_elem(flavor);
+        for (int i = 0; i < max(round(ans)+0.1, 0.); i++) alloc.add_elem(flavor);
     }
     alloc.compute();
     Outputor output(alloc, meta);
