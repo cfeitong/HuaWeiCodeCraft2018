@@ -60,10 +60,11 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         ans *= meta.days;
         
 //        cout << flavor << " " << ans << endl;
-        //for (int i = 0; i < max(round(ans) + 0.1, 0.); i++) alloc.alloc(flavor);
-        map_predict_num_flavors[flavor] += max(round(ans) + 0.1, 0.);
+        for (int i = 0; i < max(round(ans) + 0.1, 0.); i++) alloc.add_elem(flavor);
+        //map_predict_num_flavors[flavor] += max(round(ans) + 0.1, 0.);
     }
-
+    alloc.compute();
+/*
     //各种虚拟机参数
     unordered_map<string, Flavor> map_flavor_cpu_mem;
     for (const auto &flavor : meta.targets) {
@@ -91,7 +92,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         }
         id++;
     } 
-    
+    */
     Outputor output(alloc, meta);
 
 
