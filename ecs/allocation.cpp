@@ -8,7 +8,7 @@
 #include <cmath>
 
 int Allocator::count(int phy_id, const string &flavor) {
-    int id = phy_id;
+    int id = phy_id - 1;
     if (this->result.find(id) == this->result.end()) return 0;
     auto &t = this->result[id];
     return t[flavor];
@@ -40,7 +40,7 @@ void Allocator::reset() {
     *this = Allocator(cpu, mem, type);
 }
 
-template <typename T>
+template<typename T>
 void print_vector(const vector<T> &v) {
     for (const auto &t : v) {
         cout << t << " ";
@@ -73,9 +73,9 @@ bool Allocator::compute() {
                  return a.first > b.first;
              }
          });
-    double T = 100;
+    double T = 2;
     double min_T = 1;
-    double rate = 0.9999;
+    double rate = 0.9;
     double min_score = 100;
     vector<string> best_elems = this->elems;
     vector<int> idx;

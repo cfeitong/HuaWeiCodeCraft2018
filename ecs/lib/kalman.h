@@ -1,6 +1,9 @@
 #ifndef _KALMAN_H_
 #define _KALMAN_H_
 #include <stdio.h>
+#include <vector>
+
+using namespace std;
 // 一维滤波器信息结构体
 typedef  struct{
 	double filterValue;  //k-1时刻的滤波值，即是k-1时刻的值

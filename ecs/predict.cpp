@@ -5,7 +5,6 @@
 #include "evaluation.h"
 #include "matrix.h"
 #include "simplex.h"
-#include "svmpred.h"
 
 #include <iostream>
 #include <memory>
