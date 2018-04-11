@@ -5,6 +5,7 @@
 #include "evaluation.h"
 #include "matrix.h"
 #include "simplex.h"
+#include "kalman.h"
 
 #include <iostream>
 #include <memory>
@@ -41,11 +42,15 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
     }
     Allocator alloc(meta.cpu_lim, meta.mem_lim, meta.opt_type);
     for (const auto &flavor : meta.targets) {
+        /*
         unique_ptr<LinearRegression> lr(new LinearRegression());
         lr->init(meta.targets.size() * meta.block_count, samples[flavor]);
         double loss = lr->train(2000, 1e-3, 1e-3);
         double ans = lr->predict(all_data);
-//        cout << flavor << " " << ans << endl;
+        */
+        // use kalman filter to predict
+        double ans = KalmanPred(records.get_data(flavor), meta.days);
+        cout << flavor << " " << ans << endl;
         for (int i = 0; i < max(round(ans)+0.1, 1.); i++) alloc.add_elem(flavor);
     }
     alloc.compute();

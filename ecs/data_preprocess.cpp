@@ -83,6 +83,10 @@ vector<double> RecordSet::to_data(string flavor) {
     return ret;
 }
 
+vector<double> RecordSet::get_data(string flavor) {
+    return this->data_flavor[flavor];
+}
+
 vector<Record> RecordSet::at_date(int day) {
     return this->by_date[day];
 }
