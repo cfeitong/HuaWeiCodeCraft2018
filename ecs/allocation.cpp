@@ -80,7 +80,7 @@ bool Allocator::compute() {
     vector<string> best_elems = this->elems;
     vector<int> idx;
     for (int i = 0; i < this->elems.size(); i++) idx.push_back(i);
-    idx.push_back(0); // to avoid out of index error when only on element
+    idx.push_back(0); // to avoid out of index error when only one element
     while (T > min_T) {
         map<int, pair<int, int>> cur_resource;
         map<int, map<string, int>> cur_result;
@@ -95,14 +95,14 @@ bool Allocator::compute() {
                 continue;
             }
             for (auto &phy : cur_resource) {
-                int phy_id = phy.first;
                 int &cpu_used = phy.second.first;
                 int &mem_used = phy.second.second;
                 if (cpu_req + cpu_used <= INFO.cpu_lim && mem_req + mem_used <= INFO.mem_lim) {
                     cpu_used += cpu_req;
                     mem_used += mem_req;
-                    cur_result[phy_id][flavor]++;
+                    cur_result[phy.first][flavor]++;
                     ok = true;
+                    break;
                 }
             }
             if (!ok) {
