@@ -4,8 +4,8 @@
 
 #include "allocation.h"
 #include <iostream>
-#include <algorithm>
 #include <cmath>
+#include <random>
 
 int Allocator::count(int phy_id, const string &flavor) {
     int id = phy_id - 1;
@@ -73,20 +73,24 @@ bool Allocator::compute() {
                  return a.first > b.first;
              }
          });
+
+    random_device rd;
+    default_random_engine rdeg(rd());
     double T = 100;
     double min_T = 1;
     double rate = 0.9999;
     double min_score = 100;
     vector<string> best_elems = this->elems;
-    vector<int> idx;
-    for (int i = 0; i < this->elems.size(); i++) idx.push_back(i);
-    idx.push_back(0); // to avoid out of index error when only one element
     while (T > min_T) {
         map<int, pair<int, int>> cur_resource;
         map<int, map<string, int>> cur_result;
         auto cur_elems = best_elems;
-        random_shuffle(idx.begin(), idx.end());
-        swap(cur_elems[idx[0]], cur_elems[idx[1]]);
+        int s = max(0, static_cast<int>(this->elems.size()) - 1);
+        uniform_int_distribution<int> unidist(0, s);
+        for (int i = 0; i < log10(T); i++) {
+            int a = unidist(rdeg), b = unidist(rdeg);
+            swap(cur_elems[a], cur_elems[b]);
+        }
         for (const string &flavor : cur_elems) {
             bool ok = false;
             int cpu_req = CPU[flavorid(flavor)];
