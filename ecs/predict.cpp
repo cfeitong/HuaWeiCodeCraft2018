@@ -7,6 +7,7 @@
 #include "simplex.h"
 #include "kalman.h"
 #include "utils.h"
+#include "spline.h"
 
 #include <iostream>
 #include <memory>
@@ -31,7 +32,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
 
     Info meta(info);
     meta.block_count = 4;
-//    meta.k = 0.15;
+    meta.k = 0.15;
     INFO = meta;
 
     RecordSet records = RecordSet(parse_records(join(data, data_num)));
@@ -39,12 +40,19 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
     Allocator alloc(meta.cpu_lim, meta.mem_lim, meta.opt_type);
     vector<int> flavornum(15, 0);
     for (const auto &flavor : meta.targets) {
-        unique_ptr<LinearRegression> lr(new LinearRegression());
-        lr->init(meta.block_count, samples[flavor]);
-        double loss = lr->train(2000, 1e-2, 1e-3);
-        auto data = records.to_data(flavor);
-        vector<double> pred_data(data.end()-meta.block_count, data.end());;
-        double ans = lr->predict(pred_data);
+//        unique_ptr<LinearRegression> lr(new LinearRegression());
+//        lr->init(meta.block_count, samples[flavor]);
+//        double loss = lr->train(2000, 1e-2, 1e-3);
+        vector<double> data = records.to_data(flavor);
+        vector<double> day;
+        for (int i = 0; i < data.size(); i++) {
+            day.push_back(i);
+        }
+        tk::spline sp;
+        sp.set_points(day, data);
+        double ans = sp(data.size());
+//        vector<double> pred_data(data.end()-meta.block_count, data.end());;
+//        double ans = lr->predict(pred_data);
 
         // use kalman filter to predict
 //        auto data = records.to_data(flavor);
