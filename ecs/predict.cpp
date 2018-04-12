@@ -46,41 +46,45 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         double ans0 = lr->predict(pred);
         double ans1 = KalmanPred(pred);
         // get flavor id
-        int dd = int((ans0+ans1)/2+0.5)+10;
+        int dd = int((ans0+ans1)/2+0.5)+7;
         flavornum[get_flavor_id(flavor) - 1] = dd;
         for (int i = 0; i < dd; i++) {
             alloc.add_elem(flavor);
         }
     }
-    vector<vector<int>> ans;
-    int l = 0, r = 200, N = -1;
-    // use binary search to get answer
-    while (l <= r) {
-        int mid = (l + r) / 2;
-        bool isok = distribute(flavornum, meta.cpu_lim, meta.mem_lim, mid, ans);
-        //cout << "yes" << endl;
-        if (isok) {
-            r = mid - 1;
-            N = mid;
-        }
-        else l = mid + 1;
-    }
-    cout << N << endl;
-    cout << "-----------" << endl;
-    for (auto &i : flavornum) cout << i << " ";
-    cout << endl;
-    cout << "-----------" << endl;
-    for (auto &it : ans) {
-        for (auto &i : it) {
-            cout << i << " ";
-        }
-        cout << endl;
-    }
+    alloc.compute();
+    alloc.postprocess();
     Outputor output(alloc, meta);
-
-
-    // 直接调用输出文件的方法输出到指定文件中(ps请注意格式的正确性，如果有解，第一行只有一个数据；第二行为空；第三行开始才是具体的数据，数据之间用一个空格分隔开)
-    write_result(output.get_another_output(ans, meta), filename);
+    write_result(output.get_output(), filename);
+//    vector<vector<int>> ans;
+//    int l = 0, r = 200, N = -1;
+//    // use binary search to get answer
+//    while (l <= r) {
+//        int mid = (l + r) / 2;
+//        bool isok = distribute(flavornum, meta.cpu_lim, meta.mem_lim, mid, ans);
+//        //cout << "yes" << endl;
+//        if (isok) {
+//            r = mid - 1;
+//            N = mid;
+//        }
+//        else l = mid + 1;
+//    }
+//    cout << N << endl;
+//    cout << "-----------" << endl;
+//    for (auto &i : flavornum) cout << i << " ";
+//    cout << endl;
+//    cout << "-----------" << endl;
+//    for (auto &it : ans) {
+//        for (auto &i : it) {
+//            cout << i << " ";
+//        }
+//        cout << endl;
+//    }
+//    Outputor output(alloc, meta);
+//
+//
+//    // 直接调用输出文件的方法输出到指定文件中(ps请注意格式的正确性，如果有解，第一行只有一个数据；第二行为空；第三行开始才是具体的数据，数据之间用一个空格分隔开)
+//    write_result(output.get_another_output(ans, meta), filename);
 }
 
 string join(char **data, int count) {
