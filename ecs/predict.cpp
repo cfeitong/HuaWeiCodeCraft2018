@@ -40,12 +40,12 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
     for (const auto &flavor : meta.targets) {
         unique_ptr<LinearRegression> lr(new LinearRegression());
         vector<double> pred = records.to_data(DAYS_PER_BLOCK, flavor);
+        pred = vector<double>(pred.end() - n, pred.end());
         tk::spline sp;
         vector<double> X;
-        for (int i = 0; i < pred.size(); i++) X.push_back(i*DAYS_PER_BLOCK);
+        for (int i = 0; i < pred.size(); i++) X.push_back(i);
         sp.set_points(X, pred);
-        double ans2 = sp(pred.size()*DAYS_PER_BLOCK);
-        pred = vector<double>(pred.end() - n, pred.end());
+        double ans2 = sp(pred.size());
         auto &s = samples[flavor];
         lr->init(n, s);
         lr->train(2000, 1e-4, 1e-3);
