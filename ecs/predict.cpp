@@ -49,9 +49,10 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
 //        double ans = lr->predict(all_data);
 
         // use kalman filter to predict
-        double ans = KalmanPred(records.get_data(flavor), meta.days);
+        auto data = records.get_data(flavor);
+        double ans = KalmanPred(data, meta.days);
 //        cout << flavor << " " << ans << endl;
-        for (int i = 0; i < max(round(ans) + 0.1, 0.); i++) alloc.add_elem(flavor);
+        for (int i = 0; i < round(ans) + 0.1; i++) alloc.add_elem(flavor);
     }
 
     alloc.compute();

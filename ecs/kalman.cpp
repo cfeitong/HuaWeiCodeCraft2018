@@ -3,7 +3,7 @@
 #include <vector>
 using namespace std;
 
-double KalmanPred(vector<double> flavor, int days) {
+double KalmanPred(const vector<double> &flavor, int days) {
 	KalmanInfo *info = new KalmanInfo();
 	// initial noise to zeros
 	Init_KalmanInfo(info, 1, 25);
@@ -18,6 +18,7 @@ double KalmanPred(vector<double> flavor, int days) {
 		pre = tmp;
 		ans += pre;
 	}
+	delete info;
 	return ans;
 }
 
