@@ -37,6 +37,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
     RecordSet records = RecordSet(parse_records(join(data, data_num)));
     map<string, vector<Sample>> samples = records.to_samples();
     Allocator alloc(meta.cpu_lim, meta.mem_lim, meta.opt_type);
+    vector<int> flavornum(15, 0);
     for (const auto &flavor : meta.targets) {
         unique_ptr<LinearRegression> lr(new LinearRegression());
         lr->init(meta.block_count, samples[flavor]);
@@ -51,16 +52,24 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
 //        double ans = KalmanPred(data);
 //        print_vector(data);
 //        cout << flavor << " " << ans << endl;
+        flavornum[get_flavor_id(flavor)] = (int)(ans + 0.5);
         for (int i = 0; i < round(ans); i++) alloc.add_elem(flavor);
     }
-
+    vector<vector<int> > ans;
+    int l = 0, r = 200, N = -1;
+    while(l <= r) {
+        int mid = (l + r) / 2;
+        bool ok = distribute(flavornum, meta.cpu_lim, meta.mem_lim, mid, ans);
+        if (ok) {r = mid - 1; N = mid;}
+        else l = mid + 1;
+    }
     alloc.compute();
     alloc.postprocess();
     Outputor output(alloc, meta);
 
 
     // 直接调用输出文件的方法输出到指定文件中(ps请注意格式的正确性，如果有解，第一行只有一个数据；第二行为空；第三行开始才是具体的数据，数据之间用一个空格分隔开)
-    write_result(output.get_output(), filename);
+    write_result(output.get_another_output(ans, meta), filename);
 }
 
 string join(char **data, int count) {
