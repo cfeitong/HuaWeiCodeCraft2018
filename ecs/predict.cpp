@@ -54,7 +54,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         double ans = KalmanPred(data);
         print_vector(data);
 //        cout << flavor << " " << ans << endl;
-        for (int i = 0; i < round(ans) + 0.1; i++) alloc.add_elem(flavor);
+        for (int i = 0; i < round(ans) + 4.1; i++) alloc.add_elem(flavor);
     }
 
     alloc.compute();
