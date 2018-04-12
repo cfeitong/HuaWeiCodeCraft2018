@@ -11,7 +11,7 @@ bool LinearRegression::init(int n, vector<Sample> ts) {
     this->trainset = ts;
     random_device rd;
     mt19937 generator(rd());
-    uniform_real_distribution<double> distribution(0, 0.1);
+    uniform_real_distribution<double> distribution(0, 1);
     for (int i = 0; i < n; i++) {
         double w = distribution(generator);
         this->w.push_back(w);
