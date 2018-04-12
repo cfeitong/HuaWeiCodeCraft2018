@@ -72,7 +72,7 @@ pdd norm(Sample &sample) {
     for (auto &i : sample.X) {
         i = (i - mn) / var;
     }
-    //sample.y = (sample.y - mn) / var;
+    sample.y = (sample.y - mn) / var;
     return pdd(mn, var);
 }
 
@@ -81,7 +81,7 @@ double LinearRegression::train(int num_times, double lr, double reg) {
     for (auto &it : this->trainset) norm(it);
     for (int t = 1; t <= num_times; t++) {
         pdvd p = this->loss(reg);
-//        if (t % 100 == 0) cout << "loss: " << p.first << endl;
+        if (t % 100 == 0) cout << "loss: " << p.first << endl;
         for (int i = 0; i < n; i++) {
             this->w[i] -= lr * p.second[i];
         }

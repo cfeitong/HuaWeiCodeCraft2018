@@ -12,6 +12,15 @@
 
 using namespace std;
 
+ostream &operator<<(ostream &os, const Sample &obj) {
+    os << "{";
+    for (auto it : obj.X) {
+        os << it << ",";
+    }
+    os << "} -> " << obj.y;
+    return os;
+}
+
 RecordSet::RecordSet(const vector<Record> &records) {
     this->records = records;
     for (auto &rec : records) {
@@ -49,12 +58,12 @@ map<string, vector<Sample>> RecordSet::to_samples() {
     for (auto &f : INFO.targets) {
         const auto &data = this->to_data(f);
         vector<Sample> samples;
-        for (int i = 0; i < data.size() - n - 1; i++) {
-            Sample sample;
-            for (int j = i; j < i+n; j++) {
+        for (int i = 0; i < data.size() - n; i++) {
+            Sample sample{{}, 0};
+            for (int j = i; j < i + n; j++) {
                 sample.X.push_back(data[j]);
             }
-            sample.y = data[i+n];
+            sample.y = data[i + n];
             samples.push_back(sample);
         }
         ret[f] = samples;
@@ -71,6 +80,8 @@ vector<double> RecordSet::to_data(const string &flavor) {
         for (int j = i - 1; j >= i - days; j--) {
             if (j >= 0) {
                 s += vec[j];
+            } else {
+                s += vec[0];
             }
         }
         ret.push_back(s);

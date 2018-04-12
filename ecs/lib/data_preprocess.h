@@ -12,6 +12,8 @@ struct Sample {
     double y;
 };
 
+ostream& operator<<(ostream& os, const Sample& obj);
+
 struct Record {
     string id;
     string flavor;
