@@ -66,7 +66,7 @@ pdd LinearRegression::norm(Sample &sample) {
     for(auto &i : sample.X) {
         i = (i - mn) / var;
     }
-    // sample.y = (sample.y - mn) / var;
+    sample.y = (sample.y - mn) / var;
     return pdd(mn, var);
 }
 
@@ -74,7 +74,10 @@ bool LinearRegression::train(int num_times, double lr, double reg) {
     for (auto &it : this->trainset) this->norm(it);
     for (int t = 1; t <= num_times; t++) {
         pdvd p = this->loss(reg);
-        if (t % 100 == 0)cout << "loss: " << p.first << endl;
+        if (t % 100 == 0) {
+            cout << "loss: " << p.first;
+            cout << "b: " << this->b << endl;
+        }
         for (int i = 0; i < n; i++) {
             this->w[i] -= lr * p.second[i];
         }
@@ -95,8 +98,8 @@ double LinearRegression::predict(vector<double> testset) {
     for (size_t i = test.size() - this->n; i <= test.size() - 1; i++) {
         score += test[i] * this->w[i];
     }
-    //if (abs(p.second) < eps) score = score + p.first;
-    //else score = score * p.second + p.first;
+    if (abs(p.second) < eps) score = score + p.first;
+    else score = score * p.second + p.first;
     return score;
 }
 
