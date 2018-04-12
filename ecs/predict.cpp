@@ -6,6 +6,7 @@
 #include "common.h"
 #include "matrix.h"
 #include "simplex.h"
+#include "spline.h"
 
 #include <cmath>
 #include <iostream>
@@ -36,13 +37,18 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
     Allocator alloc(meta.cpu_lim, meta.mem_lim, meta.opt_type);
     vector<int> flavornum(15, 0);
     for (const auto &flavor : meta.targets) {
-        unique_ptr<LinearRegression> lr(new LinearRegression());
-        auto &s = samples[flavor];
-        lr->init(n, s);
-        lr->train(1000, 1e-4, 1e-3);
-        auto pred = records.to_data(10, DAYS_PER_BLOCK, flavor);
-        double ans = lr->predict(pred);
-        ans *= meta.days / (1. * DAYS_PER_BLOCK);
+//        unique_ptr<LinearRegression> lr(new LinearRegression());
+//        auto &s = samples[flavor];
+//        lr->init(n, s);
+//        lr->train(1000, 1e-4, 1e-3);
+        vector<double> pred = records.to_data(10, DAYS_PER_BLOCK, flavor);
+//        double ans = lr->predict(pred);
+//        ans *= meta.days / (1. * DAYS_PER_BLOCK);
+        vector<double> X;
+        for (int i = 0; i < pred.size(); i++) X.push_back(i);
+        tk::spline sp;
+        sp.set_points(X, pred);
+        double ans = sp(pred.size());
         // get flavor id
         flavornum[get_flavor_id(flavor) - 1] = (int)ans;
         int dd = ceil(ans);
