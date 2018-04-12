@@ -16,6 +16,7 @@
 #include <string>
 #include <cstring>
 #include <cassert>
+#include <spline.h>
 
 using namespace std;
 
@@ -39,6 +40,11 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
     for (const auto &flavor : meta.targets) {
         unique_ptr<LinearRegression> lr(new LinearRegression());
         vector<double> pred = records.to_data(DAYS_PER_BLOCK, flavor);
+        tk::spline sp;
+        vector<double> X;
+        for (int i = 0; i < pred.size(); i++) X.push_back(i*DAYS_PER_BLOCK);
+        sp.set_points(X, pred);
+        double ans2 = sp(pred.size()*DAYS_PER_BLOCK);
         pred = vector<double>(pred.end() - n, pred.end());
         auto &s = samples[flavor];
         lr->init(n, s);
@@ -46,7 +52,8 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         double ans0 = lr->predict(pred);
         double ans1 = KalmanPred(pred);
         // get flavor id
-        int dd = int((ans0+ans1)/2+0.5);
+//        int dd = int((ans0+ans1)/2+0.5);
+        int dd = int(ans2+0.5);
         flavornum[get_flavor_id(flavor) - 1] = dd;
         for (int i = 0; i < max(dd,1); i++) {
             alloc.add_elem(flavor);
