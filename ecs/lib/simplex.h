@@ -1,11 +1,10 @@
 //
-// Created by 12996 on 2018/3/27.
+// Created by wdk on 2018/3/27.
 //
 
 #ifndef __SIMPLEX__
 #define __SIMPLEX__
 
-#include "common.h"
 #include "matrix.h"
 
 typedef struct {
@@ -13,15 +12,9 @@ typedef struct {
     int nbvar;	//non-basic variable: xi
 }PIVOT;
 
-typedef enum {
-    LP = 0,
-    ILP
-}STRATEGY;
-
-u8 initSimplexModel(MATRIX mat, MATRIX g_mat, char* var_name[]);
-void deleteSimplexModel(void);
-u8 SimplexRun(STRATEGY strategy);
-int getMaxIntValue(void);
-void getIntSolution(int* solution);
+bool initSimplexModel(Mat mat, Mat g_mat);
+bool SimplexRun();
+int getMaxIntValue();
+void getIntSolution(vector<int> &solution);
 
 #endif

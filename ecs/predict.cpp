@@ -6,7 +6,7 @@
 #include "common.h"
 #include "matrix.h"
 #include "simplex.h"
-#include "spline.h"
+#include "kalman.h"
 
 #include <cmath>
 #include <iostream>
@@ -42,13 +42,9 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
 //        lr->init(n, s);
 //        lr->train(1000, 1e-4, 1e-3);
         vector<double> pred = records.to_data(10, DAYS_PER_BLOCK, flavor);
+        double ans = KalmanPred(pred);
 //        double ans = lr->predict(pred);
 //        ans *= meta.days / (1. * DAYS_PER_BLOCK);
-        vector<double> X;
-        for (int i = 0; i < pred.size(); i++) X.push_back(i);
-        tk::spline sp;
-        sp.set_points(X, pred);
-        double ans = sp(pred.size());
         // get flavor id
         flavornum[get_flavor_id(flavor) - 1] = (int)max(ans, 0.0);
         int dd = ceil(ans);
@@ -110,80 +106,50 @@ int flavor_cpu[] = {1, 1, 1, 2, 2, 2, 4, 4, 4, 8, 8, 8,16 ,16, 16};
 int flavor_mem[] = {1, 2, 4, 2, 4, 8, 4, 8, 16, 8, 16, 32, 16, 32, 64};
 
 bool distribute(vector<int> &flavor, int cpu_tol, int mem_tol, int N, vector<vector<int>> &ans) {
-    MATRIX mat;
-    MATRIX goal_mat;
-    STRATEGY strategy = ILP;
-
-    // int flavor[] = {1, 3, 2, 5, 6, 0, 8, 3, 2, 0, 11, 3, 7, 0, 0, 0};
-    //int cpu_tol = 56;
-    //int mem_tol = 128;
-    //const int N = 6;
     assert(N < 1000);
-    float *val = (float*)malloc((15001 * 2030) * sizeof(float));
-    //float val[(10*15 + 1) * (2*10 + 30)];
-    memset(val, 0, sizeof(val));
-    int margin = N * 15;
     int interval = N * 15 + 1;
+    Mat mat(2 * N + 30, N * 15 + 1);
+    Mat goal_mat(1, N * 15 + 1);
     for (int i = 0; i < N; i++) {
         int s = i * 15 + 1;
         int t = i * 15 + 15;
-        val[i * interval] = cpu_tol;
-        val[(i + N) * interval] = mem_tol;
+        mat.mat[i][0] = cpu_tol;
+        mat.mat[i + N][0] = mem_tol;
         for (int j = s; j <= t; j++) {
-            val[i * interval + j] = flavor_cpu[j - s];
-            val[(i + N) * interval + j] = flavor_mem[j - s];
+            mat.mat[i][j] = flavor_cpu[j - s];
+            mat.mat[i + N][j] = flavor_mem[j - s];
         }
     }
-    int st = interval * 2 * N;
+    int st = 2 * N;
     for (int i = 0; i < 15; i++) {
-        val[st + i * interval] = flavor[i];
-        val[st + (i + 15) * interval] = -flavor[i];
+        mat.mat[i + st][0] = flavor[i];
+        mat.mat[i + 15 + st][0] = -flavor[i];
         for (int j = 1; j < interval; j++) {
-            if ((j-i-1)%15 == 0) {
-                val[st + i * interval + j] = 1;
-                val[st + (i + 15) * interval + j] = -1;
+            if ((j - i - 1) % 15 == 0) {
+                mat.mat[st + i][j] = 1;
+                mat.mat[st + i + 15][j] = -1;
             }
         }
     }
 
-    //float goal[ * 15 + 1];
-    float *goal = (float*)malloc((15001) * sizeof(float));
-    memset(goal, 0, sizeof(goal));
-    int max;
-    int *solution = (int *)malloc((1500) * sizeof(int));
-    //int solution[6 * 15];
-
-    create_matrix(&mat, 2 * N + 30, interval);
-    set_matrix(&mat, val);
-
-
-    create_matrix(&goal_mat, 1, interval);
-    set_matrix(&goal_mat, goal);
-
-    initSimplexModel(mat, goal_mat, NULL);
-    //printf("yes\n");
-    u8 isok = SimplexRun(strategy);
-    if (isok == 0) {
-        printf("no solution!\n");
+    vector<int> solution;
+    initSimplexModel(mat, goal_mat);
+    bool isok = SimplexRun();
+    if (!isok) {
         return false;
     }
-    max = getMaxIntValue();
+    // int max = getMaxIntValue();
     getIntSolution(solution);
-    deleteSimplexModel();
-
     ans.clear();
     for (int i = 0; i < N; i++) {
         vector<int> tmp;
         for (int j = 0; j < 15; j++) {
             tmp.push_back(solution[i * 15 + j]);
-            // printf("%d ", solution[i * 15 + j]);
         }
-        // printf("\n");
         ans.push_back(tmp);
     }
 
-    delete_matrix(&mat);
-    delete_matrix(&goal_mat);
-
     return true;
 }
+
+
