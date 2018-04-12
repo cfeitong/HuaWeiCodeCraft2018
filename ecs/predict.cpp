@@ -48,7 +48,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         // get flavor id
         int dd = int((ans0+ans1)/2+0.5)-3;
         flavornum[get_flavor_id(flavor) - 1] = dd;
-        for (int i = 0; i < dd; i++) {
+        for (int i = 0; i < max(dd,1); i++) {
             alloc.add_elem(flavor);
         }
     }
