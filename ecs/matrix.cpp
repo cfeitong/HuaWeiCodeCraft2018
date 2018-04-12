@@ -1,52 +1,153 @@
 //
-// Created by wdk on 2018/3/27.
+// Created by 12996 on 2018/3/27.
 //
 
 #include "matrix.h"
 
-void copy_mat(Mat &mat1, Mat &mat2) {
-    mat1.row = mat2.row;
-    mat1.col = mat2.col;
-    mat1.mat = mat2.mat;
-}
+u8 create_matrix(MATRIX* mat, int row, int col)
+{
+    int i;
 
-void mat_expand_row(Mat &mat, int num, vector<float> val) {
-    mat.row += num;
-    vector<float> tmp(mat.col, 0);
-    for (int i = 0; i < num; i++) {
-        int cnt = i * mat.col;
-        for (int j = 0; j < mat.col; j++) tmp[j] = val[cnt + j];
-        mat.mat.push_back(tmp);
+    mat->mem = (float**)malloc(row * sizeof(float*));
+    for(i = 0 ; i < row ; i++){
+        mat->mem[i] = (float*)malloc(col * sizeof(float));
     }
-}
 
-void mat_expand_col(Mat &mat, int num, vector<float> val) {
-    int cnt = 0;
-    for (int i = 0; i < mat.row; i++) {
-        for (int j = 0; j < num; j++) mat.mat[i].push_back(val[cnt++]);
+    if(mat->mem == NULL){
+        printf("malloc fail\n");
+        return 1;
     }
-    mat.col += num;
+    mat->row = row;
+    mat->col = col;
+
+    return 0;
 }
 
-void mat_remove_col(Mat &mat, int col_idx) {
-    Mat tmp(mat.row, mat.col - 1);
-    for (int i = 0; i < mat.row; i++) {
-        for (int j = 0; j < mat.col; j++) {
-            if (j == col_idx) continue;
-            if (j < col_idx) tmp.mat[i][j] = mat.mat[i][j];
-            else tmp.mat[i][j - 1] = mat.mat[i][j];
+void delete_matrix(MATRIX* mat)
+{
+    int i;
+
+    for(i = 0 ; i<mat->row ; i++)
+        free(mat->mem[i]);
+    free(mat->mem);
+}
+
+void set_matrix(MATRIX* mat, float* val)
+{
+    int row,col;
+
+    for(row = 0 ; row < mat->row ; row++){
+        for(col = 0 ; col < mat->col ; col++){
+            mat->mem[row][col] = val[col + row * mat->col];
         }
     }
-    mat = tmp;
 }
 
-void show_mat(Mat &mat) {
-    printf("Mat size: row: %d, col: %d\n", mat.row, mat.col);
-    for (int i = 0; i < mat.row; i++) {
-        for (int j = 0; j < mat.col; j++) {
-            printf("%.2f ", mat.mat[i][j]);
+void copy_matrix(MATRIX* des_mat, MATRIX src_mat)
+{
+    int row, col;
+
+    if( des_mat->row != src_mat.row || des_mat->col != src_mat.col ){
+        printf("err, unmatched matrix copy\n");
+        return;
+    }
+
+    for(row = 0 ; row < des_mat->row ; row++){
+        for(col = 0 ; col < des_mat->col ; col++){
+            des_mat->mem[row][col] = src_mat.mem[row][col];
+        }
+    }
+}
+
+void matrix_expand_column(MATRIX* mat, u32 exp_num, float* val)
+{
+    MATRIX temp;
+    int row, col;
+    u32 cnt = 0;
+
+    create_matrix(&temp, mat->row, mat->col);
+    copy_matrix(&temp, *mat);
+    /* recreate matrix with expanded column */
+    delete_matrix(mat);
+    create_matrix(mat, temp.row, temp.col+exp_num);
+
+    for(row = 0 ; row < temp.row ; row++){
+        for(col = 0 ; col < temp.col ; col++){
+            mat->mem[row][col] = temp.mem[row][col];
+        }
+        for( ; col < mat->col ; col++){
+            mat->mem[row][col] = val[cnt++];
+        }
+    }
+
+    delete_matrix(&temp);
+}
+
+void matrix_expand_row(MATRIX* mat, u32 exp_num, float* val)
+{
+    MATRIX temp;
+    int row, col;
+    u32 cnt = 0;
+
+    create_matrix(&temp, mat->row, mat->col);
+    copy_matrix(&temp, *mat);
+    /* recreate matrix with expanded row */
+    delete_matrix(mat);
+    create_matrix(mat, temp.row+exp_num, temp.col);
+
+    for(row = 0 ; row < temp.row ; row++){
+        for(col = 0 ; col < temp.col ; col++){
+            mat->mem[row][col] = temp.mem[row][col];
+        }
+    }
+    for(row = temp.row ; row < mat->row ; row++){
+        for(col = 0 ; col < temp.col ; col++){
+            mat->mem[row][col] = val[cnt++];
+        }
+    }
+
+    delete_matrix(&temp);
+}
+
+//index start from 0
+void matrix_remove_column(MATRIX* mat, int col_index)
+{
+    MATRIX temp;
+    int row, col;
+    u32 cnt;
+
+    if(col_index > mat->col-1){
+        printf("err, matrix_remove_column\n");
+        return;
+    }
+
+    create_matrix(&temp, mat->row, mat->col);
+    copy_matrix(&temp, *mat);
+    /* recreate matrix*/
+    delete_matrix(mat);
+    create_matrix(mat, temp.row, temp.col-1);
+
+    for(row = 0 ; row < temp.row ; row++){
+        cnt = 0;
+        for(col = 0 ; col < temp.col ; col++){
+            if(col == col_index)
+                continue;
+            mat->mem[row][cnt++] = temp.mem[row][col];
+        }
+    }
+
+    delete_matrix(&temp);
+}
+
+void print_matrix(MATRIX mat)
+{
+    int row,col;
+
+    printf("\n");
+    for(row = 0 ; row < mat.row ; row++){
+        for(col = 0 ; col < mat.col ; col++){
+            printf("%.2f\t", mat.mem[row][col]);
         }
         printf("\n");
     }
-    puts("");
 }

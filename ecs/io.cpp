@@ -27,8 +27,10 @@ using namespace std;
 static char s[100];
 static char final_result[10000];
 
+INLINE void write_file(const bool cover, const char *const buff,
+                       const char *const filename);
+
 Info::Info(char **info) {
-    if (!info) return;
     int line = 0;
     int cpu, mem, disk;
     sscanf(info[line++], "%d%d%d", &cpu, &mem, &disk);
@@ -52,30 +54,13 @@ Info::Info(char **info) {
     int end = to_days(ey, em, ed);
     int len = end - start;
 
-    sort(tar.begin(), tar.end(), [&](const string &f1, const string &f2) {
-        return flavorid(f1) < flavorid(f2);
-    });
-
     this->days = len;
     this->start_date = start;
     this->end_date = end;
     this->cpu_lim = cpu;
     this->mem_lim = mem;
-    this->block_count = 3;
     this->targets = tar;
     this->opt_type = type;
-}
-
-INLINE void write_file(const bool cover, const char *const buff,
-                       const char *const filename);
-
-int Info::flavor_seq(const string &flavor) {
-    int seq = 0;
-    for (const auto &f : this->targets) {
-        if (f == flavor) return seq;
-        seq++;
-    }
-    return -1;
 }
 
 Outputor::Outputor(Allocator &alloc, const Info &meta) {

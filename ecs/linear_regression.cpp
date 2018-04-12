@@ -1,10 +1,7 @@
 #include "linear_regression.h"
-#include "constant.h"
-
 #include <iostream>
 #include <random>
 #include <vector>
-
 using namespace std;
 
 const double eps = 1e-6;
@@ -29,9 +26,6 @@ pdvd LinearRegression::loss(double reg) {
     for (int i = 0; i < n; i++)
         grad.push_back(0);
 
-    int c = INFO.block_count;
-    double k = INFO.k;
-
     for (auto it : this->trainset) {
         double score = 0;
         for (int i = 0; i < this->n; i++) {
@@ -39,8 +33,7 @@ pdvd LinearRegression::loss(double reg) {
         }
         l += (score - it.y) * (score - it.y) / 2;
         for (int i = 0; i < n; i++) {
-            double importance = exp(-(c - i % c - 1) / (2 * k * k));
-            grad[i] += (score - it.y) * it.X[i] * importance;
+            grad[i] += (score - it.y) * it.X[i];
         }
     }
     l = l / this->trainset.size();
@@ -48,8 +41,7 @@ pdvd LinearRegression::loss(double reg) {
         l += reg * this->w[i] * this->w[i];
     for (int i = 0; i < n; i++) {
         grad[i] /= this->trainset.size();
-        double importance = exp(-(c - i % c - 1) / (2 * k * k));
-        grad[i] += 2 * reg * this->w[i] * importance;
+        grad[i] += 2 * reg * this->w[i];
     }
     return pdvd(l, grad);
 }
@@ -60,7 +52,7 @@ pdd LinearRegression::norm(Sample &sample) {
     int N = sample.X.size();
     for (auto &i : sample.X) mn += i;
     mn = mn / N;
-    for (auto &i : sample.X) {
+    for(auto &i : sample.X) {
         var += (i - mn) * (i - mn);
     }
     var = sqrt(var / N);
@@ -69,15 +61,14 @@ pdd LinearRegression::norm(Sample &sample) {
         sample.y = sample.y - mn;
         return pdd(mn, var);
     }
-    for (auto &i : sample.X) {
+    for(auto &i : sample.X) {
         i = (i - mn) / var;
     }
     sample.y = (sample.y - mn) / var;
     return pdd(mn, var);
 }
 
-double LinearRegression::train(int num_times, double lr, double reg) {
-    double loss = 0;
+bool LinearRegression::train(int num_times, double lr, double reg) {
     for (auto &it : this->trainset) this->norm(it);
     for (int t = 1; t <= num_times; t++) {
         pdvd p = this->loss(reg);
@@ -85,9 +76,8 @@ double LinearRegression::train(int num_times, double lr, double reg) {
         for (int i = 0; i < n; i++) {
             this->w[i] -= lr * p.second[i];
         }
-        loss = p.first;
     }
-    return loss;
+    return true;
 }
 
 double LinearRegression::predict(vector<double> testset) {
@@ -95,8 +85,7 @@ double LinearRegression::predict(vector<double> testset) {
     for (size_t i = testset.size() - this->n; i <= testset.size() - 1; i++)
         test.push_back(testset[i]);
     Sample tmp;
-    tmp.X = test;
-    tmp.y = 0;
+    tmp.X = test; tmp.y = 0;
     pdd p = this->norm(tmp);
     test = tmp.X;
     double score = 0;
