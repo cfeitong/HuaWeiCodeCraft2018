@@ -3,14 +3,15 @@
 
 #include <iostream>
 #include <vector>
+#include <cmath>
 using namespace std;
 
-double KalmanPred(const vector<double> &data, int days) {
+double KalmanPred(vector<double> &data) {
 	KalmanInfo *info = new KalmanInfo();
-	Init_KalmanInfo(info, 1, variance(data));
+	Init_KalmanInfo(info, 10, sqrt(variance(data)));
 	double a = 0;
 	for (auto &i : data) {
-		a = KalmanFilter(info, i);
+		i = a = KalmanFilter(info, i);
 	}
 	double ans = KalmanFilter(info, a);
 	delete info;

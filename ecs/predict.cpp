@@ -6,6 +6,7 @@
 #include "matrix.h"
 #include "simplex.h"
 #include "kalman.h"
+#include "utils.h"
 
 #include <iostream>
 #include <memory>
@@ -49,7 +50,9 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
 
         // use kalman filter to predict
         auto data = records.to_data(flavor);
-        double ans = KalmanPred(data, meta.days);
+        print_vector(data);
+        double ans = KalmanPred(data);
+        print_vector(data);
 //        cout << flavor << " " << ans << endl;
         for (int i = 0; i < round(ans) + 0.1; i++) alloc.add_elem(flavor);
     }

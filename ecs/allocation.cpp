@@ -3,6 +3,8 @@
 //
 
 #include "allocation.h"
+#include "utils.h"
+
 #include <iostream>
 #include <cmath>
 #include <random>
@@ -40,13 +42,6 @@ void Allocator::reset() {
     *this = Allocator(cpu, mem, type);
 }
 
-template<typename T>
-void print_vector(const vector<T> &v) {
-    for (const auto &t : v) {
-        cout << t << " ";
-    }
-    cout << endl;
-}
 
 // best fit decreasing
 bool Allocator::compute() {

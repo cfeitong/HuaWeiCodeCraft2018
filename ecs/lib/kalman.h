@@ -17,6 +17,6 @@ typedef  struct{
 
 void Init_KalmanInfo(KalmanInfo* info, double Q, double R);
 double KalmanFilter(KalmanInfo* kalmanInfo, double lastMeasurement);
-double KalmanPred(const vector<double> &flavor, int days);
+double KalmanPred(vector<double> &data);
 
 #endif
