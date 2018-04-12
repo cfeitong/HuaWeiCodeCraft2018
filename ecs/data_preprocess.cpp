@@ -12,15 +12,6 @@
 
 using namespace std;
 
-ostream &operator<<(ostream &os, const Sample &obj) {
-    os << "{";
-    for (auto it : obj.X) {
-        os << it << ",";
-    }
-    os << "} -> " << obj.y;
-    return os;
-}
-
 RecordSet::RecordSet(const vector<Record> &records) {
     this->records = records;
     for (auto &rec : records) {
@@ -46,9 +37,9 @@ RecordSet::RecordSet(const vector<Record> &records) {
         while (res.size() < 50) {
             res.insert(res.end(), res.begin(), res.end());
         }
-        vector<double> tmp(res.end(), res.end());
+        vector<double> tmp(res.end()-50, res.end());
 
-        this->data_flavor[idx] = res;
+        this->data_flavor[idx] = tmp;
     }
 }
 
@@ -56,14 +47,18 @@ map<string, vector<Sample>> RecordSet::to_samples() {
     map<string, vector<Sample>> ret;
     int n = INFO.block_count;
     for (auto &f : INFO.targets) {
-        const auto &data = this->to_data(f);
         vector<Sample> samples;
-        for (int i = 0; i < data.size() - n; i++) {
-            Sample sample{{}, 0};
-            for (int j = i; j < i + n; j++) {
-                sample.X.push_back(data[j]);
+        const auto &tar = this->to_data(f);
+        int len = (int)tar.size();
+        for (int i = 0; i < len - n; i++) {
+            Sample sample;
+            for (auto &fr : INFO.targets) {
+                const auto &vec = this->to_data(fr);
+                for (int block = 0; block < n; block++) {
+                    sample.X.push_back(vec[i + block]);
+                    sample.y = tar[i + n];
+                }
             }
-            sample.y = data[i + n];
             samples.push_back(sample);
         }
         ret[f] = samples;
@@ -71,7 +66,7 @@ map<string, vector<Sample>> RecordSet::to_samples() {
     return ret;
 }
 
-vector<double> RecordSet::to_data(const string &flavor) {
+vector<double> RecordSet::to_data(string flavor) {
     int days = INFO.days;
     auto &vec = this->data_flavor[flavor];
     vector<double> ret;
@@ -80,18 +75,12 @@ vector<double> RecordSet::to_data(const string &flavor) {
         for (int j = i - 1; j >= i - days; j--) {
             if (j >= 0) {
                 s += vec[j];
-            } else {
-                s += vec[0];
             }
         }
         ret.push_back(s);
     }
     reverse(ret.begin(), ret.end());
     return ret;
-}
-
-vector<double> RecordSet::get_data(const string &flavor) {
-    return this->data_flavor[flavor];
 }
 
 vector<Record> RecordSet::at_date(int day) {

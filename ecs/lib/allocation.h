@@ -13,7 +13,7 @@ class Allocator {
   public:
     Allocator(int _cpu, int _mem, const string &_type) : cpu(_cpu), mem(_mem), type(_type) {}
 
-    int count(int phy_id, const string &flavor);
+    int count(int phy_id, string flavor);
 
     map<string, int> count(int phy_id);
 
@@ -27,16 +27,14 @@ class Allocator {
 
     void reset();
 
-    // simulated annealing
-    bool compute();
-
-    void postprocess();
+    // best fit decreasing
+    void compute();
 
     void alloc(const string &flavor);
 
     map<string, int> flavor_count();
 
-//  private:
+  private:
     vector<string> elems;
     map<int, pair<int, int>> resource;
     map<int, map<string, int>> result;

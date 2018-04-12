@@ -9,7 +9,7 @@ using namespace std;
 
 const double eps = 1e-6;
 
-bool LinearRegression::init(int n, const vector<Sample> &ts) {
+bool LinearRegression::init(int n, vector<Sample> ts) {
     this->n = n;
     this->trainset = ts;
     random_device rd;
@@ -39,8 +39,7 @@ pdvd LinearRegression::loss(double reg) {
         }
         l += (score - it.y) * (score - it.y) / 2;
         for (int i = 0; i < n; i++) {
-//            double importance = exp(-(c - i % c - 1) / (2 * k * k));
-            double importance = 1;
+            double importance = exp(-(c - i % c - 1) / (2 * k * k));
             grad[i] += (score - it.y) * it.X[i] * importance;
         }
     }
@@ -49,14 +48,13 @@ pdvd LinearRegression::loss(double reg) {
         l += reg * this->w[i] * this->w[i];
     for (int i = 0; i < n; i++) {
         grad[i] /= this->trainset.size();
-//        double importance = exp(-(c - i % c - 1) / (2 * k * k));
-        double importance = 1;
+        double importance = exp(-(c - i % c - 1) / (2 * k * k));
         grad[i] += 2 * reg * this->w[i] * importance;
     }
     return pdvd(l, grad);
 }
 
-pdd norm(Sample &sample) {
+pdd LinearRegression::norm(Sample &sample) {
     double mn = 0;
     double var = 0;
     int N = sample.X.size();
@@ -80,10 +78,10 @@ pdd norm(Sample &sample) {
 
 double LinearRegression::train(int num_times, double lr, double reg) {
     double loss = 0;
-    for (auto &it : this->trainset) norm(it);
+    for (auto &it : this->trainset) this->norm(it);
     for (int t = 1; t <= num_times; t++) {
         pdvd p = this->loss(reg);
-//        if (t % 100 == 0) cout << "loss: " << p.first << endl;
+//        cout << "loss: " << p.first << endl;
         for (int i = 0; i < n; i++) {
             this->w[i] -= lr * p.second[i];
         }
@@ -92,14 +90,14 @@ double LinearRegression::train(int num_times, double lr, double reg) {
     return loss;
 }
 
-double LinearRegression::predict(const vector<double> &testset) {
+double LinearRegression::predict(vector<double> testset) {
     vector<double> test;
     for (size_t i = testset.size() - this->n; i <= testset.size() - 1; i++)
         test.push_back(testset[i]);
     Sample tmp;
     tmp.X = test;
     tmp.y = 0;
-    pdd p = norm(tmp);
+    pdd p = this->norm(tmp);
     test = tmp.X;
     double score = 0;
     for (size_t i = test.size() - this->n; i <= test.size() - 1; i++) {

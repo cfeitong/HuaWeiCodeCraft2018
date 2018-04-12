@@ -5,17 +5,11 @@
 #include "evaluation.h"
 #include "matrix.h"
 #include "simplex.h"
-#include "kalman.h"
-#include "utils.h"
-#include "spline.h"
 
 #include <iostream>
 #include <memory>
-#include <fstream>
 #include <sstream>
 #include <cassert>
-#include <cmath>
-#include <algorithm>
 
 using namespace std;
 
@@ -36,43 +30,37 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
     INFO = meta;
 
     RecordSet records = RecordSet(parse_records(join(data, data_num)));
+    vector<double> all_data;
     map<string, vector<Sample>> samples = records.to_samples();
+    for (const auto &flavor : meta.targets) {
+        auto pred = records.to_data(flavor);
+        all_data.insert(all_data.end(), pred.end()-meta.block_count, pred.end());
+    }
     Allocator alloc(meta.cpu_lim, meta.mem_lim, meta.opt_type);
     vector<int> flavornum(15, 0);
     for (const auto &flavor : meta.targets) {
-//        unique_ptr<LinearRegression> lr(new LinearRegression());
-//        lr->init(meta.block_count, samples[flavor]);
-//        double loss = lr->train(2000, 1e-2, 1e-3);
-        vector<double> data = records.to_data(flavor);
-        vector<double> day;
-        for (int i = 0; i < data.size(); i++) {
-            day.push_back(i);
-        }
-        tk::spline sp;
-        sp.set_points(day, data);
-        double ans = sp(data.size());
-//        vector<double> pred_data(data.end()-meta.block_count, data.end());;
-//        double ans = lr->predict(pred_data);
-
-        // use kalman filter to predict
-//        auto data = records.to_data(flavor);
-//        print_vector(data);
-//        double ans = KalmanPred(data);
-//        print_vector(data);
-//        cout << flavor << " " << ans << endl;
-        flavornum[get_flavor_id(flavor)-1] = (int)(ans + 0.5);
-//        for (int i = 0; i < round(ans); i++) alloc.add_elem(flavor);
+        unique_ptr<LinearRegression> lr(new LinearRegression());
+        lr->init(meta.targets.size() * meta.block_count, samples[flavor]);
+        double loss = lr->train(4000, 1e-3, 1e-3);
+//        cout << "loss " << loss << endl;
+        double ans = lr->predict(all_data);
+        flavornum[get_flavor_id(flavor) - 1] = (int) ans;
     }
-    vector<vector<int> > ans;
+    //test();
+    vector<vector<int>> ans;
     int l = 0, r = 200, N = -1;
-    while(l <= r) {
+    // use binary search to get answer
+    while (l <= r) {
         int mid = (l + r) / 2;
-        bool ok = distribute(flavornum, meta.cpu_lim, meta.mem_lim, mid, ans);
-        if (ok) {r = mid - 1; N = mid;}
-        else l = mid + 1;
+        bool isok = distribute(flavornum, meta.cpu_lim, meta.mem_lim, mid, ans);
+        //cout << "yes" << endl;
+        if (isok) {
+            r = mid - 1;
+            N = mid;
+        } else l = mid + 1;
     }
-//    alloc.compute();
-//    alloc.postprocess();
+    if (N == -1) printf("no solution!\n");
+
     Outputor output(alloc, meta);
 
 

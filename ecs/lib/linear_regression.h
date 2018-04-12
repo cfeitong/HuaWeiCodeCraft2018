@@ -8,14 +8,14 @@ using namespace std;
 
 typedef pair<double, vector<double>> pdvd;
 typedef pair<double, double> pdd;
-pdd norm(Sample &sample);
 
 class LinearRegression {
 public:
-    bool init(int n, const vector<Sample> &ts);
+    bool init(int n, vector<Sample> ts);
     pdvd loss(double reg);
+    pdd norm(Sample &sample);
     double train(int num_times, double lr, double reg);
-    double predict(const vector<double> &testset);
+    double predict(vector<double> testset);
     void show();
 private:
     int n; // dating back n times

@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
 
     data_line_num = read_file(data, MAX_DATA_NUM, data_file);
 
-//    printf("data file line num is :%d \n", data_line_num);
+    printf("data file line num is :%d \n", data_line_num);
     if (data_line_num == 0)
     {
         printf("Please input valid data file.\n");
@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
 
     info_line_num = read_file(info, MAX_INFO_NUM, input_file);
 
-//    printf("input file line num is :%d \n", info_line_num);
+    printf("input file line num is :%d \n", info_line_num);
     if (info_line_num == 0)
     {
         printf("Please input valid info file.\n");
