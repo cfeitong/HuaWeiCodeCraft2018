@@ -115,14 +115,14 @@ bool Allocator::compute() {
                 cur_result[cur_result.size()][flavor]++;
             }
         }
-        const auto p = cur_resource.crbegin();
-        double use_rate = 0;
-        if (this->type == "CPU") {
-            use_rate = p->second.first * 1. / INFO.cpu_lim;
-        } else if (this->type == "MEM") {
-            use_rate = p->second.second * 1. / INFO.mem_lim;
+        double score = 0;
+        for (const auto &p : cur_resource) {
+            if (this->type == "CPU") {
+                score += 1 - p.second.first * 1.0 / INFO.cpu_lim;
+            } else if (this->type == "MEM") {
+                score += 1 - p.second.second * 1.0 / INFO.mem_lim;
+            }
         }
-        double score = cur_resource.size() - 1 + use_rate;
         if (score < min_score || exp((min_score - score) / T) > rand() / RAND_MAX) {
             min_score = score;
             this->result = cur_result;
