@@ -47,18 +47,14 @@ map<string, vector<Sample>> RecordSet::to_samples() {
     map<string, vector<Sample>> ret;
     int n = INFO.block_count;
     for (auto &f : INFO.targets) {
+        const auto &data = this->to_data(f);
         vector<Sample> samples;
-        const auto &tar = this->to_data(f);
-        int len = (int)tar.size();
-        for (int i = 0; i < len - n; i++) {
+        for (int i = 0; i < data.size() - n - 1; i++) {
             Sample sample;
-            for (auto &fr : INFO.targets) {
-                const auto &vec = this->to_data(fr);
-                for (int block = 0; block < n; block++) {
-                    sample.X.push_back(vec[i + block]);
-                    sample.y = tar[i + n];
-                }
+            for (int j = i; j < i+n; j++) {
+                sample.X.push_back(data[j]);
             }
+            sample.y = data[i+n];
             samples.push_back(sample);
         }
         ret[f] = samples;
@@ -66,7 +62,7 @@ map<string, vector<Sample>> RecordSet::to_samples() {
     return ret;
 }
 
-vector<double> RecordSet::to_data(string flavor) {
+vector<double> RecordSet::to_data(const string &flavor) {
     int days = INFO.days;
     auto &vec = this->data_flavor[flavor];
     vector<double> ret;
@@ -83,7 +79,7 @@ vector<double> RecordSet::to_data(string flavor) {
     return ret;
 }
 
-vector<double> RecordSet::get_data(string flavor) {
+vector<double> RecordSet::get_data(const string &flavor) {
     return this->data_flavor[flavor];
 }
 

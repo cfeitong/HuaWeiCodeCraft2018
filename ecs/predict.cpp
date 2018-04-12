@@ -35,26 +35,23 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
     INFO = meta;
 
     RecordSet records = RecordSet(parse_records(join(data, data_num)));
-    vector<double> all_data;
     map<string, vector<Sample>> samples = records.to_samples();
-    for (const auto &flavor : meta.targets) {
-        auto pred = records.to_data(flavor);
-        all_data.insert(all_data.end(), pred.end() - meta.block_count, pred.end());
-    }
     Allocator alloc(meta.cpu_lim, meta.mem_lim, meta.opt_type);
     for (const auto &flavor : meta.targets) {
-//        unique_ptr<LinearRegression> lr(new LinearRegression());
-//        lr->init(meta.targets.size() * meta.block_count, samples[flavor]);
-//        double loss = lr->train(2000, 1e-3, 1e-3);
-//        double ans = lr->predict(all_data);
+        unique_ptr<LinearRegression> lr(new LinearRegression());
+        lr->init(meta.block_count, samples[flavor]);
+        double loss = lr->train(2000, 1e-3, 1e-3);
+        auto data = records.to_data(flavor);
+        vector<double> pred_data(data.end()-meta.block_count, data.end());;
+        double ans = lr->predict(pred_data);
 
         // use kalman filter to predict
-        auto data = records.to_data(flavor);
-        print_vector(data);
-        double ans = KalmanPred(data);
-        print_vector(data);
+//        auto data = records.to_data(flavor);
+//        print_vector(data);
+//        double ans = KalmanPred(data);
+//        print_vector(data);
 //        cout << flavor << " " << ans << endl;
-        for (int i = 0; i < round(ans) + 7.1; i++) alloc.add_elem(flavor);
+        for (int i = 0; i < round(ans); i++) alloc.add_elem(flavor);
     }
 
     alloc.compute();
