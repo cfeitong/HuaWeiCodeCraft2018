@@ -43,7 +43,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         auto &s = samples[flavor];
         lr->init(n, s);
         lr->train(1000, 1e-4, 1e-3);
-//        KalmanPred(pred);
+        KalmanPred(pred);
         double ans = lr->predict(pred);
         ans *= meta.days / (1. * DAYS_PER_BLOCK);
         // get flavor id
