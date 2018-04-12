@@ -1,6 +1,7 @@
 #include "data_preprocess.h"
 #include "lib_time.h"
 #include "constant.h"
+#include "kalman.h"
 #include <cstdio>
 #include <map>
 #include <sstream>
@@ -44,19 +45,13 @@ SampleByFlavor RecordSet::to_samples(int n, int days) {
     SampleByFlavor ret;
     for (auto &fr : this->data_flavor) {
         string idx = fr.first;
-        vector<double> &data = fr.second;
+        vector<double> data = this->to_data(days, idx);
+        KalmanPred(data);
         vector<Sample> tmp;
-        for (size_t i = 0; i < data.size() - (n + 1) * days - 1; i++) {
+        for (size_t i = 0; i <data.size() - n; i++) {
             Sample t;
-            for (int j = 0; j < n; j++) {
-                double s = 0;
-                for(int k = i + j * days; k < i + j * days + days; k++) {
-                    s += data[k];
-                }
-                t.X.push_back(s);
-            }
-            t.y = 0;
-            for (int j = i + n * days; j < i + (n + 1) * days; j++) t.y += data[j];
+            for (int j = i; j < i + n; j++) t.X.push_back(data[j]);
+            t.y = data[i + n];
             tmp.push_back(t);
         }
         ret[idx] = tmp;
@@ -64,14 +59,21 @@ SampleByFlavor RecordSet::to_samples(int n, int days) {
     return ret;
 }
 
-vector<double> RecordSet::to_data(int n, int days, string flavor) {
+vector<double> RecordSet::to_data(int days, string flavor) {
     auto &vec = this->data_flavor[flavor];
     vector<double> ret;
-    for (int i = 0; i < n; i++) {
+    for (int i = (int) vec.size(); i >= 0; i -= days) {
         double s = 0;
-        for (size_t j = vec.size() - (n - i) * days; j < vec.size() - (n - i - 1) * days; j++) s += vec[j];
+        for (int j = i - 1; j >= i - days; j--) {
+            if (j >= 0) {
+                s += vec[j];
+            } else {
+                s += vec[0];
+            }
+        }
         ret.push_back(s);
     }
+    reverse(ret.begin(), ret.end());
     return ret;
 }
 

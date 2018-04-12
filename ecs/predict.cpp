@@ -37,14 +37,15 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
     Allocator alloc(meta.cpu_lim, meta.mem_lim, meta.opt_type);
     vector<int> flavornum(15, 0);
     for (const auto &flavor : meta.targets) {
-//        unique_ptr<LinearRegression> lr(new LinearRegression());
-//        auto &s = samples[flavor];
-//        lr->init(n, s);
-//        lr->train(1000, 1e-4, 1e-3);
-        vector<double> pred = records.to_data(10, DAYS_PER_BLOCK, flavor);
-        double ans = KalmanPred(pred);
-//        double ans = lr->predict(pred);
-//        ans *= meta.days / (1. * DAYS_PER_BLOCK);
+        unique_ptr<LinearRegression> lr(new LinearRegression());
+        vector<double> pred = records.to_data(DAYS_PER_BLOCK, flavor);
+        pred = vector<double>(pred.end() - n, pred.end());
+        auto &s = samples[flavor];
+        lr->init(n, s);
+        lr->train(1000, 1e-4, 1e-3);
+        KalmanPred(pred);
+        double ans = lr->predict(pred);
+        ans *= meta.days / (1. * DAYS_PER_BLOCK);
         // get flavor id
         flavornum[get_flavor_id(flavor) - 1] = (int)max(ans, 0.0);
         int dd = ceil(ans);
