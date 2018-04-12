@@ -48,7 +48,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         lr->train(2000, 1e-4, 1e-3);
         double ans0 = lr->predict(pred);
         double ans1 = KalmanPred(pred);
-        double ans3 = pred[pred.size() - 1] * 0.7 + pred[pred.size() - 2] * 0.25 + pred[pred.size() - 3] * 0.05;
+        double ans3 = pred[pred.size() - 1] * 0.8 + pred[pred.size() - 2] * 0.15 + pred[pred.size() - 3] * 0.05;
         // get flavor id
 //        int dd = int((ans0 + ans1 + ans3) / 3 + 0.5);
         int dd = int(ans3+0.5);
