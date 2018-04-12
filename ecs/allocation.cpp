@@ -72,8 +72,8 @@ bool Allocator::compute() {
     default_random_engine rdeg(rd());
     double T = 200;
     double min_T = 1;
-    double rate = 0.9999;
-    double min_score = 100;
+    double rate = 0.999;
+    double min_score = 1e200;
     vector<string> best_elems = this->elems;
     while (T > min_T) {
         map<int, pair<int, int>> cur_resource;
