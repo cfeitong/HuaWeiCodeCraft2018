@@ -29,7 +29,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
                     int data_num, char *filename) {
 
     Info meta(info);
-    int n = 3;
+    int n = 4;
     const int DAYS_PER_BLOCK = meta.days;
 
     RecordSet records = RecordSet(parse_records(join(data, data_num)));
