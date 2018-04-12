@@ -21,7 +21,9 @@
 using namespace std;
 
 string join(char **data, int count);
+
 int get_flavor_id(string flavor);
+
 bool distribute(vector<int> &flavor, int cpu_tol, int mem_tol, int N, vector<vector<int>> &ans);
 
 
@@ -46,12 +48,12 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         lr->train(2000, 1e-4, 1e-3);
         double ans0 = lr->predict(pred);
         double ans1 = KalmanPred(pred);
-        double ans3 = pred[pred.size()-1];
+        double ans3 = pred[pred.size() - 1];
         // get flavor id
 //        int dd = int((ans0+ans1)/2+0.5);
-        int dd = int((ans0+ans1+ans3)/3+0.5)+2;
+        int dd = int((ans0 + ans1 + ans3) / 3 + 0.5)+1;
         flavornum[get_flavor_id(flavor) - 1] = dd;
-        for (int i = 0; i < max(dd,1); i++) {
+        for (int i = 0; i < max(dd, 1); i++) {
             alloc.add_elem(flavor);
         }
     }
@@ -105,11 +107,10 @@ int get_flavor_id(string flavor) {
     // e.g. flavor11 return 11
     if (flavor.size() > 7) {
         return (flavor[6] - '0') * 10 + flavor[7] - '0';
-    }
-    else return flavor[6] - '0';
+    } else return flavor[6] - '0';
 }
 
-int flavor_cpu[] = {1, 1, 1, 2, 2, 2, 4, 4, 4, 8, 8, 8,16 ,16, 16};
+int flavor_cpu[] = {1, 1, 1, 2, 2, 2, 4, 4, 4, 8, 8, 8, 16, 16, 16};
 int flavor_mem[] = {1, 2, 4, 2, 4, 8, 4, 8, 16, 8, 16, 32, 16, 32, 64};
 
 bool distribute(vector<int> &flavor, int cpu_tol, int mem_tol, int N, vector<vector<int>> &ans) {
