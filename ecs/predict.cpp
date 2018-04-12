@@ -50,7 +50,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         sp.set_points(X, pred);
         double ans = sp(pred.size());
         // get flavor id
-        flavornum[get_flavor_id(flavor) - 1] = (int)ans;
+        flavornum[get_flavor_id(flavor) - 1] = (int)max(ans, 0.0);
         int dd = ceil(ans);
         for (int i = 0; i < dd; i++) {
             alloc.add_elem(flavor);
