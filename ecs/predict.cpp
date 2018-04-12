@@ -41,13 +41,12 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         vector<double> pred = records.to_data(DAYS_PER_BLOCK, flavor);
         pred = vector<double>(pred.end() - n, pred.end());
         auto &s = samples[flavor];
-//        lr->init(n, s);
-//        lr->train(1000, 1e-4, 1e-3);
-        double ans = KalmanPred(pred);
-//        double ans = lr->predict(pred);
-//        ans *= meta.days / (1. * DAYS_PER_BLOCK);
+        lr->init(n, s);
+        lr->train(1000, 1e-4, 1e-3);
+        double ans0 = lr->predict(pred);
+        double ans1 = KalmanPred(pred);
         // get flavor id
-        int dd = int(ans+0.5);
+        int dd = int((ans0+ans1)/2+0.5);
         flavornum[get_flavor_id(flavor) - 1] = dd;
         for (int i = 0; i < dd; i++) {
             alloc.add_elem(flavor);
