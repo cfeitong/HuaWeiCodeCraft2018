@@ -7,7 +7,6 @@
 #include "simplex.h"
 #include "kalman.h"
 
-#include "borrow.h"
 
 #include <iostream>
 #include <memory>
@@ -43,7 +42,6 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         all_data.insert(all_data.end(), pred.end() - meta.block_count, pred.end());
     }
     Allocator alloc(meta.cpu_lim, meta.mem_lim, meta.opt_type);
-    unordered_map<string, int> map_predict_num_flavors;
     for (const auto &flavor : meta.targets) {
 //        unique_ptr<LinearRegression> lr(new LinearRegression());
 //        lr->init(meta.targets.size() * meta.block_count, samples[flavor]);
@@ -54,35 +52,9 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         double ans = KalmanPred(records.get_data(flavor), meta.days);
 //        cout << flavor << " " << ans << endl;
         for (int i = 0; i < max(round(ans) + 0.1, 0.); i++) alloc.add_elem(flavor);
-        map_predict_num_flavors[flavor] += max(round(ans) + 0.1, 0.);
     }
 
-    //各种虚拟机参数
-    unordered_map<string, Flavor> map_flavor_cpu_mem;
-    for (const auto &flavor : meta.targets) {
-        map_flavor_cpu_mem[flavor] = Flavor(flavor, MEM[flavorid(flavor)], CPU[flavorid(flavor)]);
-    }
-
-    //服务器资源相关信息
-    int server_cpu = INFO.cpu_lim;
-    int server_mem = INFO.mem_lim;
-    bool CPUorMEM = (INFO.opt_type == "CPU");
-    //调用模拟退火算法找到最优放置方法
-    vector<Server> servers = put_flavors_to_servers(map_predict_num_flavors, map_flavor_cpu_mem, server_mem,
-                                                    server_cpu, CPUorMEM);
-//    alloc.compute();
-    alloc.reset();
-    int id = 0;
-    for (const Server &s : servers) {
-        map<string, int> cnt;
-        for (const auto &f : s.flavors) {
-            cnt[f.name]++;
-        }
-        for (const auto &flavor : meta.targets) {
-            alloc.result[id][flavor] += cnt[flavor];
-        }
-        id++;
-    }
+    alloc.compute();
     Outputor output(alloc, meta);
 
 
