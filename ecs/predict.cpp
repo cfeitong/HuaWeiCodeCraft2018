@@ -7,7 +7,6 @@
 #include "simplex.h"
 #include "kalman.h"
 
-
 #include <iostream>
 #include <memory>
 #include <fstream>
@@ -49,7 +48,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
 //        double ans = lr->predict(all_data);
 
         // use kalman filter to predict
-        auto data = records.get_data(flavor);
+        auto data = records.to_data(flavor);
         double ans = KalmanPred(data, meta.days);
 //        cout << flavor << " " << ans << endl;
         for (int i = 0; i < round(ans) + 0.1; i++) alloc.add_elem(flavor);

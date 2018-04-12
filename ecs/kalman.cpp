@@ -1,23 +1,18 @@
 #include "kalman.h"
+#include "analys.h"
+
 #include <iostream>
 #include <vector>
 using namespace std;
 
-double KalmanPred(const vector<double> &flavor, int days) {
+double KalmanPred(const vector<double> &data, int days) {
 	KalmanInfo *info = new KalmanInfo();
-	// initial noise to zeros
-	Init_KalmanInfo(info, 1, 25);
-	for (auto &i : flavor) {
-		auto a = KalmanFilter(info, i);
-		//cout << "kalman out: " << a << endl;
+	Init_KalmanInfo(info, 1, variance(data));
+	double a = 0;
+	for (auto &i : data) {
+		a = KalmanFilter(info, i);
 	}
-	double ans = 0;
-	double pre = flavor[flavor.size() - 1];
-	for (int i = 0; i < days; i++) {
-		double tmp = KalmanFilter(info, pre);
-		pre = tmp;
-		ans += pre;
-	}
+	double ans = KalmanFilter(info, a);
 	delete info;
 	return ans;
 }

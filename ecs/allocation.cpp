@@ -87,7 +87,7 @@ bool Allocator::compute() {
         auto cur_elems = best_elems;
         int s = max(0, static_cast<int>(this->elems.size()) - 1);
         uniform_int_distribution<int> unidist(0, s);
-        for (int i = 0; i < log10(T); i++) {
+        for (int i = 0; i < log10(T) + 1; i++) {
             int a = unidist(rdeg), b = unidist(rdeg);
             swap(cur_elems[a], cur_elems[b]);
         }
@@ -110,7 +110,7 @@ bool Allocator::compute() {
                 }
             }
             if (!ok) {
-                pair<int, int> p {cpu_req, mem_req};
+                pair<int, int> p{cpu_req, mem_req};
                 cur_resource[cur_resource.size()] = p;
                 cur_result[cur_result.size()][flavor]++;
             }
@@ -138,7 +138,7 @@ void Allocator::postprocess() {
     auto p = this->resource.rbegin();
     double use_rate = 0;
     if (this->type == "CPU") {
-        use_rate = p->second.first* 1.0 / INFO.cpu_lim;
+        use_rate = p->second.first * 1.0 / INFO.cpu_lim;
     } else if (this->type == "MEM") {
         use_rate = p->second.second * 1.0 / INFO.mem_lim;
     }
