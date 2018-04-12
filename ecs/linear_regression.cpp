@@ -39,7 +39,8 @@ pdvd LinearRegression::loss(double reg) {
         }
         l += (score - it.y) * (score - it.y) / 2;
         for (int i = 0; i < n; i++) {
-            double importance = exp(-(c - i % c - 1) / (2 * k * k));
+//            double importance = exp(-(c - i % c - 1) / (2 * k * k));
+            double importance = 1;
             grad[i] += (score - it.y) * it.X[i] * importance;
         }
     }
