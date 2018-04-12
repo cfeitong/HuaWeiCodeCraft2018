@@ -40,7 +40,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
     for (const auto &flavor : meta.targets) {
         unique_ptr<LinearRegression> lr(new LinearRegression());
         lr->init(meta.block_count, samples[flavor]);
-        double loss = lr->train(2000, 1e-3, 1e-3);
+        double loss = lr->train(2000, 1e-2, 1e-3);
         auto data = records.to_data(flavor);
         vector<double> pred_data(data.end()-meta.block_count, data.end());;
         double ans = lr->predict(pred_data);

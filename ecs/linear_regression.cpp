@@ -103,8 +103,8 @@ double LinearRegression::predict(const vector<double> &testset) {
     for (size_t i = test.size() - this->n; i <= test.size() - 1; i++) {
         score += test[i] * this->w[i];
     }
-    //if (abs(p.second) < eps) score = score + p.first;
-    //else score = score * p.second + p.first;
+    if (abs(p.second) < eps) score = score + p.first;
+    else score = score * p.second + p.first;
     return score;
 }
 
