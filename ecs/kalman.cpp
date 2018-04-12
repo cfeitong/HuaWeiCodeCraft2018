@@ -8,7 +8,7 @@ using namespace std;
 
 double KalmanPred(vector<double> &data) {
 	KalmanInfo *info = new KalmanInfo();
-	Init_KalmanInfo(info, 10, sqrt(variance(data)));
+	Init_KalmanInfo(info, 1, variance(data)/10);
 	double a = 0;
 	for (auto &i : data) {
 		i = a = KalmanFilter(info, i);
