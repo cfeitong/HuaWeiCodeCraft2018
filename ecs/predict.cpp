@@ -41,11 +41,6 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         unique_ptr<LinearRegression> lr(new LinearRegression());
         vector<double> pred = records.to_data(DAYS_PER_BLOCK, flavor);
         pred = vector<double>(pred.end() - n, pred.end());
-        tk::spline sp;
-        vector<double> X;
-        for (int i = 0; i < pred.size(); i++) X.push_back(i);
-        sp.set_points(X, pred);
-        double ans2 = sp(pred.size());
         auto &s = samples[flavor];
         lr->init(n, s);
         lr->train(2000, 1e-4, 1e-3);
@@ -54,7 +49,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         double ans3 = pred[pred.size()-1];
         // get flavor id
 //        int dd = int((ans0+ans1)/2+0.5);
-        int dd = int((ans0+ans1+ans2+ans3)/3+0.5);
+        int dd = int((ans0+ans1+ans3)/3+0.5)+2;
         flavornum[get_flavor_id(flavor) - 1] = dd;
         for (int i = 0; i < max(dd,1); i++) {
             alloc.add_elem(flavor);
