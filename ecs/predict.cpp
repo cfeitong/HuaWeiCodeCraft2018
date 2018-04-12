@@ -42,7 +42,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         pred = vector<double>(pred.end() - n, pred.end());
         auto &s = samples[flavor];
         lr->init(n, s);
-        lr->train(10000, 2e-5, 1e-3);
+        lr->train(10000, 1e-4, 1e-4);
         double ans0 = lr->predict(pred);
         double ans1 = KalmanPred(pred);
         // get flavor id
