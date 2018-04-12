@@ -23,11 +23,11 @@ bool LinearRegression::init(int n, vector<Sample> ts) {
 pdvd LinearRegression::loss(double reg) {
     double l = 0;
     vector<double> grad;
-    for (int i = 0; i < n; i++)
+    for (int i = 0; i <= this->n; i++)
         grad.push_back(0);
 
     for (auto it : this->trainset) {
-        double score = 0;
+        double score = this->b;
         for (int i = 0; i < this->n; i++) {
             score += it.X[i] * this->w[i];
         }
@@ -35,8 +35,10 @@ pdvd LinearRegression::loss(double reg) {
         for (int i = 0; i < n; i++) {
             grad[i] += (score - it.y) * it.X[i];
         }
+        grad[n] += (score - it.y);
     }
     l = l / this->trainset.size();
+    grad[n] /= this->trainset.size();
     for (int i = 0; i < n; i++)
         l += reg * this->w[i] * this->w[i];
     for (int i = 0; i < n; i++) {
@@ -64,7 +66,7 @@ pdd LinearRegression::norm(Sample &sample) {
     for(auto &i : sample.X) {
         i = (i - mn) / var;
     }
-    sample.y = (sample.y - mn) / var;
+    // sample.y = (sample.y - mn) / var;
     return pdd(mn, var);
 }
 
@@ -76,6 +78,7 @@ bool LinearRegression::train(int num_times, double lr, double reg) {
         for (int i = 0; i < n; i++) {
             this->w[i] -= lr * p.second[i];
         }
+        this->b -= lr * p.second[n];
     }
     return true;
 }
@@ -88,12 +91,12 @@ double LinearRegression::predict(vector<double> testset) {
     tmp.X = test; tmp.y = 0;
     pdd p = this->norm(tmp);
     test = tmp.X;
-    double score = 0;
+    double score = this->b;
     for (size_t i = test.size() - this->n; i <= test.size() - 1; i++) {
         score += test[i] * this->w[i];
     }
-    if (abs(p.second) < eps) score = score + p.first;
-    else score = score * p.second + p.first;
+    //if (abs(p.second) < eps) score = score + p.first;
+    //else score = score * p.second + p.first;
     return score;
 }
 
