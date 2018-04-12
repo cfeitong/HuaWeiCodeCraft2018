@@ -53,7 +53,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
 //        print_vector(data);
 //        cout << flavor << " " << ans << endl;
         flavornum[get_flavor_id(flavor)] = (int)(ans + 0.5);
-        for (int i = 0; i < round(ans); i++) alloc.add_elem(flavor);
+//        for (int i = 0; i < round(ans); i++) alloc.add_elem(flavor);
     }
     vector<vector<int> > ans;
     int l = 0, r = 200, N = -1;
@@ -63,8 +63,8 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         if (ok) {r = mid - 1; N = mid;}
         else l = mid + 1;
     }
-    alloc.compute();
-    alloc.postprocess();
+//    alloc.compute();
+//    alloc.postprocess();
     Outputor output(alloc, meta);
 
 
