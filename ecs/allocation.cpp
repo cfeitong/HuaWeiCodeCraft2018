@@ -134,6 +134,21 @@ bool Allocator::compute() {
     return true;
 }
 
+void Allocator::postprocess() {
+    auto p = this->resource.rbegin();
+    double use_rate = 0;
+    if (this->type == "CPU") {
+        use_rate = p->second.first* 1.0 / INFO.cpu_lim;
+    } else if (this->type == "MEM") {
+        use_rate = p->second.second * 1.0 / INFO.mem_lim;
+    }
+    if (use_rate < 0.4 && this->resource.size() > 1) {
+        int id = this->resource.size();
+        this->resource.erase(id);
+        this->result.erase(id);
+    }
+}
+
 void Allocator::alloc(const string &flavor) {
     int id = flavorid(flavor);
     int cpu_used = CPU[id];

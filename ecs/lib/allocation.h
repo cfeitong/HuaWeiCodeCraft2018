@@ -27,8 +27,10 @@ class Allocator {
 
     void reset();
 
-    // best fit decreasing
+    // simulated annealing
     bool compute();
+
+    void postprocess();
 
     void alloc(const string &flavor);
 

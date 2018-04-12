@@ -55,6 +55,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
     }
 
     alloc.compute();
+    alloc.postprocess();
     Outputor output(alloc, meta);
 
 
