@@ -67,8 +67,8 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
 
         // get flavor id
 //        int dd = int((ans0 + ans1 + ans3 * (meta.days * 1.0 / DAYS_PER_BLOCK)) / 3 + 0.5);
-        int dd = int(ans * (meta.days * 1.0 / DAYS_PER_BLOCK) + 0.5) - 3;
-        for (int i = 0; i < max(dd, 1); i++) {
+        int dd = int(ans * (meta.days * 1.0 / DAYS_PER_BLOCK) + 0.5);
+        for (int i = 0; i < max(dd, 0); i++) {
             alloc.add_elem(flavor);
         }
     }
