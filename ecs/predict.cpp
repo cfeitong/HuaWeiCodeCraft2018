@@ -52,7 +52,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         double ans3 = pred[pred.size() - 1];
         // exponential_smoothing
         double_exponential_smoothing<double, 1> dbexpsmth;
-        dbexpsmth.set_1st_smoothing_constant(0.99);
+        dbexpsmth.set_1st_smoothing_constant(0.98);
         dbexpsmth.set_2nd_smoothing_constant(0.75);
         dbexpsmth.set_vacillation_tolerance(0.1);
         es_vec<double, 1> curr_query, smth_result;
