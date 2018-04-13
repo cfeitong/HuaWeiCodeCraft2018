@@ -20,13 +20,25 @@ int main() {
         map<string, int> res;
         Allocator alloc(cpu, mem, opt);
         for (int j = 0; j < cnt; j++) {
-            int num; fscanf(f, "%s:%d", tmp, &num);
+            int num;
+            fscanf(f, "%s", tmp);
+            char *t = tmp; while (*t++ != ':');
+            sscanf(t, "%d", &num);
+            t[-1] = 0;
             string flavor(tmp);
             res[flavor] = num;
             for (int k = 0; k < num; k++) alloc.add_elem(flavor);
         }
         alloc.compute();
-        printf("phy machine count: %d\n", alloc.count_phy());
+        int c = alloc.count_phy();
+        printf("case %d: phy=%d\n", i, c);
+//        for (int i = 0; i < c; i++) {
+//            auto t = alloc.count(i);
+//            printf("on machine %d\n", i);
+//            for (auto it : t) {
+//                printf("%s: %d\n", it.first.c_str(), it.second);
+//            }
+//        }
     }
 
     return 0;
