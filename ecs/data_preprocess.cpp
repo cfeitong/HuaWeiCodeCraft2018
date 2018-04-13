@@ -45,7 +45,7 @@ SampleByFlavor RecordSet::to_samples(int n, int days) {
     SampleByFlavor ret;
     for (auto &fr : this->data_flavor) {
         string idx = fr.first;
-        vector<double> data = this->to_data(days, idx, false);
+        vector<double> data = this->to_data(days, idx, true);
 //        KalmanPred(data);
         vector<Sample> tmp;
         for (size_t i = 0; i <data.size() - n; i++) {
