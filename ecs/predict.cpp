@@ -44,7 +44,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         auto pred = vector<double>(blockdata.end() - n, blockdata.end());
         auto &s = samples[flavor];
         lr->init(n, s);
-        lr->train(3000, 1e-4, 1e-3);
+        lr->train(3000, 1e-4, 1e-3, 20);
         double ans0 = lr->predict(pred);
         // kalman filter
         double ans1 = KalmanPred(pred);

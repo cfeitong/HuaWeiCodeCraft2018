@@ -23,6 +23,7 @@
 #include <limits>
 #include <iostream>
 #include <cassert>
+#include <cmath>
 
 /** Class data_vec defines a D-dimensional vector
  *  \T Data type of vector
@@ -124,9 +125,9 @@ public:
     /** return the 2-norm of this vector */
     const T norm() const
     {
-        T norm(0);
-        for (size_t i = 0; i < D; ++i) norm += esv_data[i] * esv_data[i];
-        return sqrt(norm);
+        T norm_(0);
+        for (size_t i = 0; i < D; ++i) norm_ += esv_data[i] * esv_data[i];
+        return sqrt(norm_);
     }
 
     /** ************* Friend functions to provide more operators ****************************** */
