@@ -75,6 +75,9 @@ bool Allocator::compute() {
     double rate = 0.9999;
     double min_score = 1e200;
     vector<string> best_elems = this->elems;
+    map<int, pair<int, int>> total_resource;
+    map<int, map<string, int>> total_result;
+    double total_score = 1e200;
     while (T > min_T) {
         map<int, pair<int, int>> cur_resource;
         map<int, map<string, int>> cur_result;
@@ -123,7 +126,17 @@ bool Allocator::compute() {
             this->resource = cur_resource;
             best_elems = cur_elems;
         }
+        if (score < total_score) {
+            total_score = score;
+            total_result = cur_result;
+            total_resource = cur_resource;
+        }
+
         T *= rate;
+    }
+    if (this->result.size() > total_result.size()) {
+        this->result = total_result;
+        this->resource = total_resource;
     }
     return true;
 }
