@@ -61,7 +61,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
             curr_query[0] = i;
             smth_result = dbexpsmth.push_to_pop(curr_query);
         }
-        double ans4 = smth_result[0];
+        double ans4 = smth_result[0] / 5 * DAYS_PER_BLOCK;
 
         double ans = ans4;
 
