@@ -41,7 +41,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         // linear regression
         unique_ptr<LinearRegression> lr(new LinearRegression());
         vector<double> blockdata = records.to_data(DAYS_PER_BLOCK, flavor);
-        pred = vector<double>(blockdata.end() - n, blockdata.end());
+        auto pred = vector<double>(blockdata.end() - n, blockdata.end());
         auto &s = samples[flavor];
         lr->init(n, s);
         lr->train(3000, 1e-4, 1e-3);
