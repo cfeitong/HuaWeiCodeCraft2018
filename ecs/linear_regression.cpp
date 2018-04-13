@@ -2,6 +2,7 @@
 #include <iostream>
 #include <random>
 #include <vector>
+#include <algorithm>
 using namespace std;
 
 const double eps = 1e-6;
@@ -20,13 +21,15 @@ bool LinearRegression::init(int n, vector<Sample> ts) {
     return true;
 }
 
-pdvd LinearRegression::loss(double reg) {
+pdvd LinearRegression::loss(double reg, int sgd) {
     double l = 0;
     vector<double> grad;
     for (int i = 0; i <= this->n; i++)
         grad.push_back(0);
-
-    for (auto it : this->trainset) {
+    vector<Sample> tset;
+    if (sgd != -1) tset = this->sampletrainset;
+    else tset = this->trainset;
+    for (auto it : tset) {
         double score = this->b;
         for (int i = 0; i < this->n; i++) {
             score += it.X[i] * this->w[i];
@@ -37,12 +40,12 @@ pdvd LinearRegression::loss(double reg) {
         }
         grad[n] += (score - it.y);
     }
-    l = l / this->trainset.size();
-    grad[n] /= this->trainset.size();
+    l = l / tset.size();
+    grad[n] /= tset.size();
     for (int i = 0; i < n; i++)
         l += reg * this->w[i] * this->w[i];
     for (int i = 0; i < n; i++) {
-        grad[i] /= this->trainset.size();
+        grad[i] /= tset.size();
         grad[i] += 2 * reg * this->w[i];
     }
     return pdvd(l, grad);
@@ -70,10 +73,17 @@ pdd LinearRegression::norm(Sample &sample) {
     return pdd(mn, var);
 }
 
-bool LinearRegression::train(int num_times, double lr, double reg) {
+bool LinearRegression::train(int num_times, double lr, double reg, int sgd) {
     for (auto &it : this->trainset) this->norm(it);
     for (int t = 1; t <= num_times; t++) {
-        pdvd p = this->loss(reg);
+        if (sgd != -1) {
+            vector<int> idx;
+            for (int i = 0; i < this->trainset.size(); i++) idx.push_back(i);
+            random_shuffle(idx.begin(), idx.end());
+            this->sampletrainset.clear();
+            for (int i = 0; i < sgd; i++) this->sampletrainset.push_back(this->trainset[idx[i]]);
+        }
+        pdvd p = this->loss(reg, sgd);
         if (t % 100 == 0) {
             cout << "loss: " << p.first;
             cout << "b: " << this->b << endl;

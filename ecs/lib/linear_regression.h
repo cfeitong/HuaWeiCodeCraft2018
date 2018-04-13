@@ -12,9 +12,9 @@ typedef pair<double, double> pdd;
 class LinearRegression {
 public:
     bool init(int n, vector<Sample> ts);
-    pdvd loss(double reg);
+    pdvd loss(double reg, int sgd=-1);
     pdd norm(Sample &sample);
-    bool train(int num_times, double lr, double reg);
+    bool train(int num_times, double lr, double reg, int sgd=-1);
     double predict(vector<double> testset);
     void show();
 private:
@@ -22,6 +22,7 @@ private:
     vector<double> w;  // weight, size: n
     double b; // bias
     vector<Sample> trainset; // idx for date, value for number
+    vector<Sample> sampletrainset;
 };
 
 #endif
