@@ -81,7 +81,7 @@ bool Allocator::compute() {
         auto cur_elems = best_elems;
         int s = max(0, static_cast<int>(this->elems.size()) - 1);
         uniform_int_distribution<int> unidist(0, s);
-        for (int i = 0; i < T/5 + 1; i++) {
+        for (int i = 0; i < T/10 + 1; i++) {
             int a = unidist(rdeg), b = unidist(rdeg);
             swap(cur_elems[a], cur_elems[b]);
         }

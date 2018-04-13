@@ -33,10 +33,10 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
 
     Info meta(info);
     int n = 4;
-    const int DAYS_PER_BLOCK = meta.days;
+    const int DAYS_PER_BLOCK = 4;
 
     RecordSet records = RecordSet(parse_records(join(data, data_num)));
-    SampleByFlavor samples = records.to_samples(n, 5);
+    SampleByFlavor samples = records.to_samples(n, DAYS_PER_BLOCK);
     Allocator alloc(meta.cpu_lim, meta.mem_lim, meta.opt_type);
     vector<int> flavornum(15, 0);
     for (const auto &flavor : meta.targets) {
@@ -51,7 +51,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         double ans3 = pred[pred.size() - 1];
         // get flavor id
 //        int dd = int((ans0 + ans1 + ans3) / 3 + 0.5);
-        int dd = int(ans3+0.5);
+        int dd = int(ans3 * (meta.days * 1.0 / DAYS_PER_BLOCK) + 0.5);
         flavornum[get_flavor_id(flavor) - 1] = dd;
         for (int i = 0; i < max(dd, 1); i++) {
             alloc.add_elem(flavor);
