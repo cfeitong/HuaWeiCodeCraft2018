@@ -37,7 +37,6 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
     RecordSet records = RecordSet(parse_records(join(data, data_num)));
     SampleByFlavor samples = records.to_samples(n, DAYS_PER_BLOCK);
     Allocator alloc(meta.cpu_lim, meta.mem_lim, meta.opt_type);
-    vector<int> flavornum(15, 0);
     for (const auto &flavor : meta.targets) {
         // linear regression
         unique_ptr<LinearRegression> lr(new LinearRegression());
@@ -65,8 +64,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
 
         // get flavor id
 //        int dd = int((ans0 + ans1 + ans3 * (meta.days * 1.0 / DAYS_PER_BLOCK)) / 3 + 0.5);
-        int dd = int(ans0 * (meta.days * 1.0 / DAYS_PER_BLOCK) + 0.5);
-        flavornum[get_flavor_id(flavor) - 1] = dd;
+        int dd = int(ans4 * (meta.days * 1.0 / DAYS_PER_BLOCK) + 0.5);
         for (int i = 0; i < max(dd, 1); i++) {
             alloc.add_elem(flavor);
         }
