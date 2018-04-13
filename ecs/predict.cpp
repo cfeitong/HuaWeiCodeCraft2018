@@ -32,7 +32,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
 
     Info meta(info);
     int n = 4;
-    const int DAYS_PER_BLOCK = 5;
+    const int DAYS_PER_BLOCK = 8;
 
     RecordSet records = RecordSet(parse_records(join(data, data_num)));
     SampleByFlavor samples = records.to_samples(n, DAYS_PER_BLOCK);
