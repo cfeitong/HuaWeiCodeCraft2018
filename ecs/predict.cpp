@@ -32,7 +32,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
 
     Info meta(info);
     int n = 4;
-    const int DAYS_PER_BLOCK = 3;
+    const int DAYS_PER_BLOCK = 5;
 
     RecordSet records = RecordSet(parse_records(join(data, data_num)));
     SampleByFlavor samples = records.to_samples(n, DAYS_PER_BLOCK);
@@ -56,6 +56,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         dbexpsmth.set_2nd_smoothing_constant(0.75);
 //        dbexpsmth.set_vacillation_tolerance(10);
         es_vec<double, 1> curr_query, smth_result;
+        blockdata = records.to_data(5, flavor);
         for (auto &i : blockdata) {
             curr_query[0] = i;
             smth_result = dbexpsmth.push_to_pop(curr_query);
