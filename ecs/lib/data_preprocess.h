@@ -31,7 +31,7 @@ class RecordSet {
     RecordSet(RecordSet &&o) = default;
 
     SampleByFlavor to_samples(int n, int days);
-    vector<double> to_data(int days, string flavor);
+    vector<double> to_data(int days, string flavor, bool is_training=false);
     vector<Record> at_date(int day);
 
   private:
