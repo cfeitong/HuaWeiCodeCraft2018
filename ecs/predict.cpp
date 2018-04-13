@@ -54,7 +54,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         double_exponential_smoothing<double, 1> dbexpsmth;
         dbexpsmth.set_1st_smoothing_constant(0.8);
         dbexpsmth.set_2nd_smoothing_constant(0.5);
-        //dbexpsmth.set_vacillation_tolerance(0.1);
+        dbexpsmth.set_vacillation_tolerance(0.1);
         es_vec<double, 1> curr_query, smth_result;
         for (auto &i : blockdata) {
             curr_query[0] = i;
@@ -64,7 +64,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
 
         // get flavor id
 //        int dd = int((ans0 + ans1 + ans3 * (meta.days * 1.0 / DAYS_PER_BLOCK)) / 3 + 0.5);
-        int dd = int(ans3 * (meta.days * 1.0 / DAYS_PER_BLOCK) + 0.5);
+        int dd = int(ans4 * (meta.days * 1.0 / DAYS_PER_BLOCK) + 0.5);
         for (int i = 0; i < max(dd, 1); i++) {
             alloc.add_elem(flavor);
         }
