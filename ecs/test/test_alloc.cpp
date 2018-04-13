@@ -17,10 +17,16 @@ int main() {
         fscanf(f, "%d%d%d", &cpu, &mem, &disk);
         char tmp[10]; fscanf(f, "%s", tmp); string opt(tmp);
         int cnt; fscanf(f, "%d", &cnt);
+        map<string, int> res;
+        Allocator alloc(cpu, mem, opt);
         for (int j = 0; j < cnt; j++) {
             int num; fscanf(f, "%s:%d", tmp, &num);
             string flavor(tmp);
+            res[flavor] = num;
+            for (int k = 0; k < num; k++) alloc.add_elem(flavor);
         }
+        alloc.compute();
+        printf("phy machine count: %d\n", alloc.count_phy());
     }
 
     return 0;
