@@ -17,7 +17,6 @@
 #include <string>
 #include <cstring>
 #include <cassert>
-#include <spline.h>
 
 using namespace std;
 
