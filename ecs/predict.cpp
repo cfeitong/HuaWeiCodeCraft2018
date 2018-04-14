@@ -64,7 +64,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         ans4 = ans4 / 5 * DAYS_PER_BLOCK;
 
 //        double ans = (ans1+ans4)/2;
-        double ans = ans4;
+        double ans = (ans0+ans3+ans1+ans4)/4;
 
         // get flavor id
 //        int dd = int((ans0 + ans1 + ans3 * (meta.days * 1.0 / DAYS_PER_BLOCK)) / 3 + 0.5);
