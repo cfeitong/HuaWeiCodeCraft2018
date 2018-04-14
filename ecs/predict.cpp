@@ -47,7 +47,8 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         lr->init(n, s);
         lr->train(3000, 1e-4, 1e-3, 20);
         double ans0 = lr->predict(pred);
-
+        lr->show();
+        
         Kalman filter(25, sqrt(variance(pred)));
         double ans1 = filter.filter(pred);
 

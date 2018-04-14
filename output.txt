@@ -1,11 +1,70 @@
-41
-flavor1 8
-flavor2 8
+154
 flavor3 8
-flavor4 8
-flavor5 9
+flavor5 62
+flavor8 82
+flavor10 2
+flavor13 0
+flavor15 0
 
-2
-1 flavor1 8 flavor2 8 flavor3 8 flavor4 8 flavor5 8
-2 flavor1 0 flavor2 0 flavor3 0 flavor4 0 flavor5 1
+60
+1 flavor3 0 flavor5 0 flavor8 2 flavor10 0 flavor13 0 flavor15 0
+2 flavor3 2 flavor5 1 flavor8 1 flavor10 0 flavor13 0 flavor15 0
+3 flavor3 0 flavor5 2 flavor8 1 flavor10 0 flavor13 0 flavor15 0
+4 flavor3 0 flavor5 0 flavor8 2 flavor10 0 flavor13 0 flavor15 0
+5 flavor3 0 flavor5 2 flavor8 1 flavor10 0 flavor13 0 flavor15 0
+6 flavor3 0 flavor5 4 flavor8 0 flavor10 0 flavor13 0 flavor15 0
+7 flavor3 0 flavor5 0 flavor8 2 flavor10 0 flavor13 0 flavor15 0
+8 flavor3 0 flavor5 0 flavor8 2 flavor10 0 flavor13 0 flavor15 0
+9 flavor3 0 flavor5 2 flavor8 1 flavor10 0 flavor13 0 flavor15 0
+10 flavor3 0 flavor5 2 flavor8 1 flavor10 0 flavor13 0 flavor15 0
+11 flavor3 2 flavor5 1 flavor8 1 flavor10 0 flavor13 0 flavor15 0
+12 flavor3 0 flavor5 2 flavor8 1 flavor10 0 flavor13 0 flavor15 0
+13 flavor3 0 flavor5 0 flavor8 0 flavor10 1 flavor13 0 flavor15 0
+14 flavor3 0 flavor5 2 flavor8 1 flavor10 0 flavor13 0 flavor15 0
+15 flavor3 0 flavor5 2 flavor8 1 flavor10 0 flavor13 0 flavor15 0
+16 flavor3 0 flavor5 2 flavor8 1 flavor10 0 flavor13 0 flavor15 0
+17 flavor3 0 flavor5 2 flavor8 1 flavor10 0 flavor13 0 flavor15 0
+18 flavor3 0 flavor5 0 flavor8 2 flavor10 0 flavor13 0 flavor15 0
+19 flavor3 0 flavor5 2 flavor8 1 flavor10 0 flavor13 0 flavor15 0
+20 flavor3 0 flavor5 2 flavor8 1 flavor10 0 flavor13 0 flavor15 0
+21 flavor3 0 flavor5 0 flavor8 2 flavor10 0 flavor13 0 flavor15 0
+22 flavor3 0 flavor5 0 flavor8 2 flavor10 0 flavor13 0 flavor15 0
+23 flavor3 0 flavor5 0 flavor8 2 flavor10 0 flavor13 0 flavor15 0
+24 flavor3 0 flavor5 0 flavor8 2 flavor10 0 flavor13 0 flavor15 0
+25 flavor3 0 flavor5 0 flavor8 2 flavor10 0 flavor13 0 flavor15 0
+26 flavor3 0 flavor5 2 flavor8 1 flavor10 0 flavor13 0 flavor15 0
+27 flavor3 0 flavor5 0 flavor8 2 flavor10 0 flavor13 0 flavor15 0
+28 flavor3 0 flavor5 0 flavor8 2 flavor10 0 flavor13 0 flavor15 0
+29 flavor3 0 flavor5 0 flavor8 2 flavor10 0 flavor13 0 flavor15 0
+30 flavor3 0 flavor5 2 flavor8 1 flavor10 0 flavor13 0 flavor15 0
+31 flavor3 0 flavor5 2 flavor8 1 flavor10 0 flavor13 0 flavor15 0
+32 flavor3 0 flavor5 2 flavor8 1 flavor10 0 flavor13 0 flavor15 0
+33 flavor3 0 flavor5 0 flavor8 2 flavor10 0 flavor13 0 flavor15 0
+34 flavor3 2 flavor5 1 flavor8 1 flavor10 0 flavor13 0 flavor15 0
+35 flavor3 0 flavor5 0 flavor8 2 flavor10 0 flavor13 0 flavor15 0
+36 flavor3 0 flavor5 2 flavor8 1 flavor10 0 flavor13 0 flavor15 0
+37 flavor3 0 flavor5 0 flavor8 2 flavor10 0 flavor13 0 flavor15 0
+38 flavor3 0 flavor5 2 flavor8 1 flavor10 0 flavor13 0 flavor15 0
+39 flavor3 0 flavor5 2 flavor8 1 flavor10 0 flavor13 0 flavor15 0
+40 flavor3 0 flavor5 0 flavor8 2 flavor10 0 flavor13 0 flavor15 0
+41 flavor3 0 flavor5 2 flavor8 1 flavor10 0 flavor13 0 flavor15 0
+42 flavor3 0 flavor5 0 flavor8 2 flavor10 0 flavor13 0 flavor15 0
+43 flavor3 0 flavor5 2 flavor8 1 flavor10 0 flavor13 0 flavor15 0
+44 flavor3 0 flavor5 0 flavor8 2 flavor10 0 flavor13 0 flavor15 0
+45 flavor3 0 flavor5 0 flavor8 2 flavor10 0 flavor13 0 flavor15 0
+46 flavor3 0 flavor5 2 flavor8 1 flavor10 0 flavor13 0 flavor15 0
+47 flavor3 0 flavor5 0 flavor8 2 flavor10 0 flavor13 0 flavor15 0
+48 flavor3 2 flavor5 1 flavor8 1 flavor10 0 flavor13 0 flavor15 0
+49 flavor3 0 flavor5 0 flavor8 2 flavor10 0 flavor13 0 flavor15 0
+50 flavor3 0 flavor5 2 flavor8 1 flavor10 0 flavor13 0 flavor15 0
+51 flavor3 0 flavor5 0 flavor8 2 flavor10 0 flavor13 0 flavor15 0
+52 flavor3 0 flavor5 0 flavor8 2 flavor10 0 flavor13 0 flavor15 0
+53 flavor3 0 flavor5 0 flavor8 0 flavor10 1 flavor13 0 flavor15 0
+54 flavor3 0 flavor5 2 flavor8 1 flavor10 0 flavor13 0 flavor15 0
+55 flavor3 0 flavor5 0 flavor8 2 flavor10 0 flavor13 0 flavor15 0
+56 flavor3 0 flavor5 4 flavor8 0 flavor10 0 flavor13 0 flavor15 0
+57 flavor3 0 flavor5 0 flavor8 2 flavor10 0 flavor13 0 flavor15 0
+58 flavor3 0 flavor5 0 flavor8 2 flavor10 0 flavor13 0 flavor15 0
+59 flavor3 0 flavor5 2 flavor8 1 flavor10 0 flavor13 0 flavor15 0
+60 flavor3 0 flavor5 2 flavor8 0 flavor10 0 flavor13 0 flavor15 0
 

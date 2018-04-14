@@ -114,6 +114,10 @@ double LinearRegression::predict(vector<double> testset) {
 }
 
 void LinearRegression::show() {
+    cout << "----------w-----------" << endl;
     for (int i = 0; i < this->n; i++)
-        cout << this->w[i] << endl;
+        cout << "w" << i << ":" << this->w[i] << " ";
+    cout << endl;
+    cout << "----------b-----------" << endl;
+    cout << "b:" << this->b << endl;
 }

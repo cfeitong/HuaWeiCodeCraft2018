@@ -5,6 +5,8 @@
 #ifndef ECS_EXP_SMOOdoubleHING_H
 #define ECS_EXP_SMOOdoubleHING_H
 
+#include <cassert>
+
 class ExpSmoothing {
 public:
     /** Default constructor */
