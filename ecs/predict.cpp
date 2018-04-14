@@ -5,7 +5,8 @@
 #include "evaluation.h"
 #include "common.h"
 #include "kalman.h"
-#include "exponential_smoothing.h"
+#include "exp_smoothing.h"
+#include "analys.h"
 
 #include <cmath>
 #include <iostream>
@@ -46,22 +47,21 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         lr->init(n, s);
         lr->train(3000, 1e-4, 1e-3, 20);
         double ans0 = lr->predict(pred);
-        // kalman filter
-        double ans1 = KalmanPred(pred);
-        // use last data 
+
+        Kalman filter(25, sqrt(variance(pred)));
+        double ans1 = filter.filter(pred);
+
+        // use last data
         double ans3 = pred[pred.size() - 1];
-        // exponential_smoothing
-        double_exponential_smoothing<double, 1> dbexpsmth;
-        dbexpsmth.set_1st_smoothing_constant(0.98);
-        dbexpsmth.set_2nd_smoothing_constant(0.75);
-//        dbexpsmth.set_vacillation_tolerance(10);
-        es_vec<double, 1> curr_query, smth_result;
+
+
+        ExpSmoothing es(0.98, 0.75);
         blockdata = records.to_data(5, flavor);
-        for (auto &i : blockdata) {
-            curr_query[0] = i;
-            smth_result = dbexpsmth.push_to_pop(curr_query);
+        double ans4 = 0;
+        for (auto i : blockdata) {
+            ans4 = es.smooth(i);
         }
-        double ans4 = smth_result[0] / 5 * DAYS_PER_BLOCK;
+        ans4 = ans4 / 5 * DAYS_PER_BLOCK;
 
         double ans = (ans1+ans4)/2;
 

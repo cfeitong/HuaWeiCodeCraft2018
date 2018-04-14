@@ -84,10 +84,10 @@ bool LinearRegression::train(int num_times, double lr, double reg, int sgd) {
             for (int i = 0; i < sgd; i++) this->sampletrainset.push_back(this->trainset[idx[i]]);
         }
         pdvd p = this->loss(reg, sgd);
-        if (t % 100 == 0) {
-            cout << "loss: " << p.first;
-            cout << "b: " << this->b << endl;
-        }
+//        if (t % 100 == 0) {
+//            cout << "loss: " << p.first;
+//            cout << "b: " << this->b << endl;
+//        }
         for (int i = 0; i < n; i++) {
             this->w[i] -= lr * p.second[i];
         }
