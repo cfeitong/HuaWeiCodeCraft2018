@@ -7,9 +7,10 @@ using namespace std;
 
 const double eps = 1e-6;
 
-bool LinearRegression::init(int n, vector<Sample> ts) {
+bool LinearRegression::init(int n, const vector<Sample>& ts, const vector<double>& initwb) {
     this->n = n;
     this->trainset = ts;
+    /*
     random_device rd;
     mt19937 generator(rd());
     uniform_real_distribution<double> distribution(0, 0.15);
@@ -18,6 +19,9 @@ bool LinearRegression::init(int n, vector<Sample> ts) {
         this->w.push_back(w);
     }
     this->b = distribution(generator);
+    */
+    for (int i = 0; i < n; i++) this->w.push_back(initwb[i]);
+    this->b = initwb[n];
     return true;
 }
 
@@ -111,6 +115,12 @@ double LinearRegression::predict(vector<double> testset) {
     if (abs(p.second) < eps) score = score + p.first;
     else score = score * p.second + p.first;
     return score;
+}
+vector<double> LinearRegression::get_w() {
+    return this->w;
+}
+double LinearRegression::get_b() {
+    return this->b;
 }
 
 void LinearRegression::show() {

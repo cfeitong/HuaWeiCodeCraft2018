@@ -12,6 +12,7 @@
 #include <iostream>
 #include <memory>
 #include <sstream>
+#include <fstream>
 #include <cstdio>
 #include <string>
 #include <cstring>
@@ -38,17 +39,23 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
     RecordSet records = RecordSet(parse_records(join(data, data_num)));
     SampleByFlavor samples = records.to_samples(n, DAYS_PER_BLOCK);
     Allocator alloc(meta.cpu_lim, meta.mem_lim, meta.opt_type);
+    //ofstream out("wbout.txt");
     for (const auto &flavor : meta.targets) {
         // linear regression
         unique_ptr<LinearRegression> lr(new LinearRegression());
         vector<double> blockdata = records.to_data(DAYS_PER_BLOCK, flavor);
         auto pred = vector<double>(blockdata.end() - n, blockdata.end());
         auto &s = samples[flavor];
-        lr->init(n, s);
+        lr->init(n, s, get_pretrained(flavor));
         lr->train(3000, 1e-4, 1e-3, 20);
         double ans0 = lr->predict(pred);
-        lr->show();
-        
+        // get output
+        //auto w = lr->get_w(); auto b = lr->get_b();
+        //out << flavor << endl;
+        //for (auto &i : w) out << i << " ";
+        //out << endl;
+        //out << b << endl;
+
         Kalman filter(25, sqrt(variance(pred)));
         double ans1 = filter.filter(pred);
 
@@ -73,6 +80,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
             alloc.add_elem(flavor);
         }
     }
+    //out.close();
     alloc.compute();
     alloc.postprocess();
     Outputor output(alloc, meta);

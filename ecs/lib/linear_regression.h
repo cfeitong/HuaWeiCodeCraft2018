@@ -11,11 +11,13 @@ typedef pair<double, double> pdd;
 
 class LinearRegression {
 public:
-    bool init(int n, vector<Sample> ts);
+    bool init(int n, const vector<Sample>& ts, const vector<double>& initwb);
     pdvd loss(double reg, int sgd=-1);
     pdd norm(Sample &sample);
     bool train(int num_times, double lr, double reg, int sgd=-1);
     double predict(vector<double> testset);
+    vector<double> get_w();
+    double get_b();
     void show();
 private:
     int n; // dating back n times
