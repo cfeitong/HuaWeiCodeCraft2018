@@ -5,6 +5,7 @@
 #include <vector>
 
 using namespace std;
+
 class Kalman {
 public:
     Kalman(double _Q, double _R) : Q(_Q), R(_R) {
@@ -17,7 +18,7 @@ public:
     double filter(double last) {
         double value = A * filter_value;
         P = A * A * P + Q;
-        double pre_value = filter_value;
+//        double pre_value = filter_value;
         kalman_gain = P * H / (P * H * H + R);
         filter_value = value + (last - value) * kalman_gain;
         P = (1 - kalman_gain * H) * P;
