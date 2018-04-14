@@ -10,18 +10,16 @@ const double eps = 1e-6;
 bool LinearRegression::init(int n, const vector<Sample>& ts, const vector<double>& initwb) {
     this->n = n;
     this->trainset = ts;
-    /*
     random_device rd;
     mt19937 generator(rd());
-    uniform_real_distribution<double> distribution(0, 0.15);
+    uniform_real_distribution<double> distribution(0, 1);
     for (int i = 0; i < n; i++) {
         double w = distribution(generator);
         this->w.push_back(w);
     }
     this->b = distribution(generator);
-    */
-    for (int i = 0; i < n; i++) this->w.push_back(initwb[i]);
-    this->b = initwb[n];
+//    for (int i = 0; i < n; i++) this->w.push_back(initwb[i]);
+//    this->b = initwb[n];
     return true;
 }
 

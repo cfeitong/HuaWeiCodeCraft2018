@@ -47,7 +47,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         auto pred = vector<double>(blockdata.end() - n, blockdata.end());
         auto &s = samples[flavor];
         lr->init(n, s, get_pretrained(flavor));
-        lr->train(3000, 1e-4, 1e-3, 20);
+        lr->train(1000, 1e-5, 1e-3, 20);
         double ans0 = lr->predict(pred);
         // get output
         //auto w = lr->get_w(); auto b = lr->get_b();
@@ -56,14 +56,15 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         //out << endl;
         //out << b << endl;
 
-        Kalman filter(25, sqrt(variance(pred)));
-        double ans1 = filter.filter(pred);
+        auto p = pred;
+        Kalman filter(25, sqrt(variance(p)));
+        double ans1 = filter.filter(p);
 
         // use last data
         double ans3 = pred[pred.size() - 1];
 
 
-        ExpSmoothing es(0.98, 0.75);
+        ExpSmoothing es(0.98, 0.8);
         blockdata = records.to_data(5, flavor);
         double ans4 = 0;
         for (auto i : blockdata) {
@@ -77,7 +78,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         // get flavor id
 //        int dd = int((ans0 + ans1 + ans3 * (meta.days * 1.0 / DAYS_PER_BLOCK)) / 3 + 0.5);
         int dd = int(ans * (meta.days * 1.0 / DAYS_PER_BLOCK) + 0.5);
-        for (int i = 0; i < max(dd, 0); i++) {
+        for (int i = 0; i < max(dd, 1); i++) {
             alloc.add_elem(flavor);
         }
     }
