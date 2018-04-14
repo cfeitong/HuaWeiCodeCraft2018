@@ -9,7 +9,6 @@
 
 class ExpSmoothing {
 public:
-    /** Default constructor */
     ExpSmoothing(double _alpha, double _beta) :
             cur_smoothed(0),
             last_smoothed(0),
@@ -17,18 +16,6 @@ public:
             alpha(_alpha),
             beta(_beta),
             cnt(0) {}
-
-
-public:
-    void set_alpha(double val) {
-        assert(val > 0 && val < 1);
-        alpha = val;
-    }
-
-    void set_beta(double val) {
-        assert(val > 0 && val < 1);
-        beta = val;
-    }
 
     double smooth(double raw) {
         if (0 == cnt) {
