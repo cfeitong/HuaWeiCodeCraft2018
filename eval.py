@@ -52,10 +52,13 @@ def main():
         cpu_lim, mem_lim = parse_input(inputcase)
         vir = parse_test(testcase)
         acc = scoring1(res, vir)
+        tot_acc += acc
         cpu_score, mem_score = scoring2(phy, cpu_lim, mem_lim)
         tot_acc += acc
         print("case: {:2} acc: {:.3f}, cpu: {:.3f}, mem: {:.3f}".format(i, acc, cpu_score, mem_score))
     print("total acc: {:2}".format(tot_acc))
+
+    print("total acc: {:.2}".format(tot_acc))
 
 
 def scoring2(phy, cpu_lim, mem_lim):
