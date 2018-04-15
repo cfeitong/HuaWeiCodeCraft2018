@@ -56,7 +56,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         //out << b << endl;
 
         auto p = pred;
-        Kalman filter(25, sqrt(variance(p)));
+        Kalman filter(28, sqrt(variance(p)));
         double ans1 = filter.filter(p);
 
         // use last data
@@ -71,7 +71,7 @@ void predict_server(char *info[MAX_INFO_NUM], char *data[MAX_DATA_NUM],
         }
         ans4 = ans4 / 5 * DAYS_PER_BLOCK;
 
-        double ans = (0.3*ans1+0.7*ans4);
+        double ans = (0.4*ans1+0.6*ans4);
 //        double ans = ans3;
 
         // get flavor id
